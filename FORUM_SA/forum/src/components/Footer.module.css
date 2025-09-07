@@ -11,11 +11,13 @@
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 16px;
+  font-family: "Montserrat", sans-serif;
 }
 
 .footerDesc {
   font-size: 1.1rem;
   margin-bottom: 24px;
+  font-family: "Montserrat", sans-serif;
 }
 
 .footerBtn {
@@ -28,6 +30,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  font-family: "Montserrat", sans-serif;
 }
 
 .footerBtn:hover {

@@ -16,12 +16,14 @@
   font-size: 3rem;
   font-weight: bold;
   color: #2563EB;
+  font-family: "Montserrat", sans-serif;
 }
 
 .subtitle {
   font-size: 1.2rem;
   margin: 16px 0 32px 0;
   color: #333;
+  font-family: "Montserrat", sans-serif;
 }
 
 .buttonGroup {
@@ -38,6 +40,7 @@
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s;
+  font-family: "Montserrat", sans-serif;
 }
 
 .btnPrimary {
@@ -80,9 +83,11 @@
   font-weight: bold;
   color: #000;
   margin-bottom: 12px;
+  font-family: "Montserrat", sans-serif;
 }
 
 .cardText {
   font-size: 1rem;
   color: #444;
+  font-family: "Montserrat", sans-serif;
 }
