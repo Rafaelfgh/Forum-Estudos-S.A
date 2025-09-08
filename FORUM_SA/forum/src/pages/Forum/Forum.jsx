@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaBookOpen,
   FaQuestionCircle,
@@ -12,6 +13,7 @@ import {
   FiChevronDown,
   FiPlus,
   FiLogOut,
+  FiUpload,
 } from "react-icons/fi";
 import styles from "./Forum.module.css";
 
@@ -50,6 +52,31 @@ const categories = [
 
 export default function Forum() {
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
+  const navigate = useNavigate();
+
+  const [notificationsCount, setNotificationsCount] = useState(0);
+  const [showNotif, setShowNotif] = useState(false);
+  const notifTimer = useRef(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleNotifClick = () => {
+    setShowNotif(true);
+    if (notifTimer.current) clearTimeout(notifTimer.current);
+    notifTimer.current = setTimeout(() => {
+      setShowNotif(false);
+      notifTimer.current = null;
+    }, 5000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (notifTimer.current) {
+        clearTimeout(notifTimer.current);
+        notifTimer.current = null;
+      }
+    };
+  }, []);
 
   return (
     <div className={styles.forum}>
@@ -69,16 +96,36 @@ export default function Forum() {
           </div>
 
           <div className={styles.topRight}>
-            <button className={styles.iconBtn} aria-label="Notificações">
+            <button
+              className={styles.iconBtn}
+              aria-label="Notificações"
+              onClick={handleNotifClick}
+            >
               <FiBell />
             </button>
 
+            {showNotif && (
+              <div
+                className={styles.notifMessage}
+                role="status"
+                aria-live="polite"
+              >
+                {notificationsCount > 0
+                  ? `Você tem ${notificationsCount} nova(s) notificação(ões)`
+                  : "Nenhuma nova notificação"}
+              </div>
+            )}
+
             <div className={styles.user}>
-              <span>S</span>
+              <span>R</span>
               <FiChevronDown className={styles.chev} />
             </div>
 
-            <button className={styles.logoutBtn} aria-label="Sair">
+            <button
+              className={styles.logoutBtn}
+              aria-label="Sair"
+              onClick={() => navigate("/")}
+            >
               <FiLogOut />
             </button>
           </div>
@@ -123,7 +170,10 @@ export default function Forum() {
               </p>
             </div>
 
-            <button className={styles.createBtn}>
+            <button
+              className={styles.createBtn}
+              onClick={() => setIsModalOpen(true)}
+            >
               <span className={styles.plusBox}>
                 <FiPlus />
               </span>
@@ -136,6 +186,53 @@ export default function Forum() {
           </div>
         </main>
       </div>
+
+      {isModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h2>Criar Novo Tópico de {selectedCategory.name}</h2>
+
+            <label className={styles.label}>Título</label>
+            <input
+              type="text"
+              placeholder="Digite um título descritivo..."
+              className={styles.input}
+            />
+
+            <label className={styles.label}>Conteúdo</label>
+            <textarea
+              placeholder="Descreva sua dúvida, compartilhe material ou inicie uma discussão..."
+              className={styles.textarea}
+            ></textarea>
+
+            <label className={styles.label}>Tags (opcional)</label>
+            <div className={styles.tagsRow}>
+              <input
+                type="text"
+                placeholder="Ex: matemática, enem, direito..."
+                className={styles.input}
+              />
+              <button className={styles.addTagBtn}>Adicionar</button>
+            </div>
+
+            <label className={styles.label}>Anexar Arquivos (opcional)</label>
+            <div className={styles.fileUpload}>
+              <FiUpload size={20} />
+              <p>Clique para anexar PDFs, imagens ou documentos</p>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancelar
+              </button>
+              <button className={styles.publishBtn}>Publicar Tópico</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
