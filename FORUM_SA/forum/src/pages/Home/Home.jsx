@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.siteTitle}>Estudos S.A</h1>
+        <h1 className={styles.siteTitle}>Estudos <span className={styles.highlight}>S.A</span></h1>
         <p className={styles.subtitle}>
           A comunidade definitiva para estudantes de concursos públicos. Compartilhe materiais, tire dúvidas, conecte-se com outros candidatos e conquiste sua aprovação!
         </p>

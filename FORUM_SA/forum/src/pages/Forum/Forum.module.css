@@ -55,7 +55,7 @@
 }
 
 .search {
-  width: 110%;
+  width: 220%;
   padding: 10px 14px 10px 40px;
   border-radius: 10px;
   border: 1px solid #e6eefb;
@@ -71,6 +71,7 @@
   gap: 12px;
   min-width: 300px;
   justify-content: flex-end;
+  margin-left: 475px;
 }
 
 .iconBtn,
@@ -142,12 +143,25 @@
   padding: 10px 8px;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
   margin-bottom: 8px;
+  transition: background 180ms ease, transform 180ms cubic-bezier(.2,.8,.2,1), color 180ms ease;
+  will-change: transform, background;
 }
 
 .categoryItem:hover {
   background: #f8fafc;
+  transform: translateY(-3px);
+}
+
+.categoryItem:active {
+  transform: translateY(-1px);
+}
+
+.categoryItem.active,
+.categoryItem.active:hover {
+  background: var(--blue);
+  color: #fff;
+  transform: none;
 }
 
 .categoryIcon {
@@ -246,6 +260,7 @@
   border-radius: 6px;
   padding: 4px;
   font-size: 14px;
+  font-weight: 200;
 }
 
 .empty {
@@ -336,6 +351,7 @@
   width: 600px;
   max-width: 90%;
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  box-sizing: border-box;
 }
 
 .label {
@@ -354,6 +370,7 @@
   border-radius: 6px;
   outline: none;
   font-family: 'Montserrat', sans-serif;
+  box-sizing: border-box;
 }
 
 .textarea {
@@ -365,6 +382,7 @@
   display: flex;
   gap: 0.5rem;
   margin-top: 0.3rem;
+  box-sizing: border-box;
 }
 
 .addTagBtn {
@@ -385,6 +403,7 @@
   border-radius: 6px;
   cursor: pointer;
   font-family: 'Montserrat', sans-serif;
+  box-sizing: border-box;
 }
 
 .modalActions {

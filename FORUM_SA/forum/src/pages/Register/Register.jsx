@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import styles from "./Register.module.css";
+import { supabase } from '../../backend/supabaseClient';
 
 const Cadastro = () => {
   const [name, setName] = useState('');
@@ -10,9 +11,10 @@ const Cadastro = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setError('');
 
     
     if (!name || !email || !password || !confirmPassword) {
@@ -28,16 +30,39 @@ const Cadastro = () => {
         return;
     }
 
-   
-    console.log('Usuário cadastrado com sucesso:', { name, email });
+    try {
+      setLoading(true);
+      setError('');
 
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          // 'data' é usado para salvar informações adicionais do usuário (metadados)
+          data: {
+            full_name: name, // Salva o nome do usuário no perfil de autenticação
+          },
+        },
+      });
+
+      if (error) {
+        throw error; // Envia o erro para o bloco catch
+      }
+
+      alert('Cadastro realizado! Por favor, verifique sua caixa de entrada para confirmar seu e-mail.');
+      navigate('/login'); // Redireciona para a página de login
     
-    navigate('/login');
+    } catch (error) {
+      setError(error.message); // Exibe o erro retornado pelo Supabase
+    } finally {
+      setLoading(false); // Garante que o estado de loading termine
+    }
   };
 
   return (
     <div className={styles.cadastroContainer}>
       <form onSubmit={handleSubmit} className={styles.cadastroFormContainer}>
+        <button className={styles.backButton} onClick={() => navigate("/")}>Voltar</button>
         <h1 className={styles.cadastroTitle}>Criar Conta</h1>
 
         <div className={styles.inputGroup}>
@@ -88,8 +113,9 @@ const Cadastro = () => {
           />
         </div>
 
-        <button type="submit" className={styles.cadastroButton}>
-          Cadastrar
+        {/* Alterado: Botão agora mostra o estado de carregamento */}
+        <button type="submit" className={styles.cadastroButton} disabled={loading}>
+          {loading ? 'Cadastrando...' : 'Cadastrar'}
         </button>
 
         {error && <p className={styles.cadastroError}>{error}</p>}

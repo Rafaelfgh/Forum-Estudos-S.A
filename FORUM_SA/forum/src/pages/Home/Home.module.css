@@ -13,10 +13,31 @@
 }
 
 .siteTitle {
-  font-size: 3rem;
-  font-weight: bold;
-  color: #2563EB;
-  font-family: "Montserrat", sans-serif;
+   /* Use uma fonte moderna e mais arredondada */
+  font-family: 'Poppins', 'Nunito', sans-serif;
+  font-size: 4.5rem; /* Um pouco maior para dar impacto */
+  color: #1E293B; /* Um cinza escuro em vez de preto puro fica mais suave */
+  text-align: center;
+  position: relative; /* Essencial para o posicionamento do highlight */
+}
+
+.highlight {
+  position: relative;
+  z-index: 1; /* Garante que o texto fique na frente */
+}
+
+/* O "marca-texto" é criado com um pseudo-elemento ::after */
+.highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 10px; /* Posição vertical do traço */
+  left: -5px; /* Posição horizontal */
+  height: 20px; /* Grossura do traço */
+  width: calc(100% + 10px); /* Largura do traço */
+  background-color: #7AA6F5; /* Um azul mais claro que o principal */
+  z-index: -1; /* Coloca o traço atrás do texto */
+  transform: rotate(-1deg); /* Uma leve rotação para parecer mais natural */
+  border-radius: 4px; /* Bordas levemente arredondadas */
 }
 
 .subtitle {

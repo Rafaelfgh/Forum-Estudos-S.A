@@ -10,6 +10,7 @@
 }
 
 .cadastroFormContainer {
+  position: relative;
   background: #fff;
   padding: 40px;
   border-radius: 12px;
@@ -103,4 +104,20 @@
 
 .navigationLink a:hover {
   text-decoration: underline;
+}
+
+.backButton {
+  position: absolute;
+  left: 12px;       
+  top: 12px;     
+  margin: 0;      
+  background: #ef4444;
+  border: none;
+  color: #ffffff;
+  font-size: 1rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
 }

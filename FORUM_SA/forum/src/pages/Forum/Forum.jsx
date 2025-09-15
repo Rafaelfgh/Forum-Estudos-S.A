@@ -17,6 +17,8 @@ import {
 } from "react-icons/fi";
 import styles from "./Forum.module.css";
 
+import { supabase } from "../../backend/supabaseClient"; 
+
 const categories = [
   {
     id: 1,
@@ -60,6 +62,13 @@ export default function Forum() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Erro ao fazer logout:", error.message);
+    }
+  };
+
   const handleNotifClick = () => {
     setShowNotif(true);
     if (notifTimer.current) clearTimeout(notifTimer.current);
@@ -83,7 +92,7 @@ export default function Forum() {
       <div className={styles.topbarContainer}>
         <header className={styles.topbar}>
           <div className={styles.topLeft}>
-            <h1 className={styles.logo}>Estudos S.A - Fórum</h1>
+            <h1 className={styles.logo}>Estudos S.A</h1>
           </div>
 
           <div className={styles.searchWrapper}>
@@ -121,10 +130,11 @@ export default function Forum() {
               <FiChevronDown className={styles.chev} />
             </div>
 
-            <button
+             <button
               className={styles.logoutBtn}
               aria-label="Sair"
-              onClick={() => navigate("/")}
+              // ADICIONADO: 3. Chamar a função handleLogout no onClick
+              onClick={handleLogout}
             >
               <FiLogOut />
             </button>
@@ -190,7 +200,7 @@ export default function Forum() {
       {isModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
-            <h2>Criar Novo Tópico de {selectedCategory.name}</h2>
+            <h2>Novo Tópico de {selectedCategory.name}</h2>
 
             <label className={styles.label}>Título</label>
             <input

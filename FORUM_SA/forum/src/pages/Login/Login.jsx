@@ -1,68 +1,88 @@
 import { useState } from 'react';
 import styles from "./Login.module.css";
 import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from "../../backend/supabaseClient"; 
 
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+export const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+   const handleLogin = async (event) => {
     event.preventDefault();
-    setError('');
-
-    if (!email || !password) {
-      setError('Por favor, preencha todos os campos.');
-      return;
-    }
-
-    if (email === 'user@example.com' && password === '123456') {
-      localStorage.setItem('isAuthenticated', 'true');
-      navigate('/');
-    } else {
-      setError('Email ou senha inválidos.');
+    try {
+      setLoading(true);
+      setError(null);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+      if (error) {
+        throw error;
+      }
+      navigate("/forum");
+    } catch (error) {
+      if (error.message.includes("Invalid login credentials")) {
+        setError("E-mail ou senha inválidos.");
+      } else {
+        setError(error.message);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className={styles.loginContainer}>
-      <form onSubmit={handleSubmit} className={styles.loginFormContainer}>
-        <h1 className={styles.loginTitle}>Acessar Conta</h1>
-
-        <div className={styles.inputGroup}>
-          <label htmlFor="email" className={styles.loginLabel}>Email</label>
-          <input
-            id="email"
-            type="email"
-            placeholder="Digite seu e-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={styles.loginInput}
-          />
-        </div>
-
-        <div className={styles.inputGroup}>
-          <label htmlFor="password" className={styles.loginLabel}>Senha</label>
-          <input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={styles.loginInput}
-          />
-        </div>
-
-        <button type="submit" className={styles.loginButton}>
-          Entrar
+      <div className={styles.loginFormContainer}>
+        <button
+          type="button"
+          className={styles.backButton}
+          onClick={() => navigate("/")}
+          aria-label="Voltar"
+        >
+          Voltar
         </button>
+        <h1 className={styles.loginTitle}>Login</h1>
+        <form onSubmit={handleLogin}>
+          <div className={styles.inputGroup}>
+            <label className={styles.loginLabel}>E-mail:</label>
+            <input
+              className={styles.loginInput}
+              type="email"
+              name="email"
+              required
+              placeholder="E-mail do usuário"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className={styles.inputGroup}>
+            <label className={styles.loginLabel}>Senha:</label>
+            <input
+              className={styles.loginInput}
+              type="password"
+              name="password"
+              required
+              placeholder="Insira sua senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          
+          <button type="submit" className={styles.loginButton} disabled={loading}>
+            {loading ? "Entrando..." : "Entrar"}
+          </button>
 
-        {error && <p className={styles.loginError}>{error}</p>}
-        <p className={styles.navigationLink}>
-          Não tem uma conta? <Link to="/register">Cadastre-se</Link>
-        </p>
-      </form>
+          {error && <p className={styles.loginError}>{error}</p>}
+        </form>
+        <div className={styles.navigationLink}>
+          <span>Não tem conta? </span>
+          <Link to="/register">Clique aqui</Link>
+        </div>
+      </div>
     </div>
   );
 };
