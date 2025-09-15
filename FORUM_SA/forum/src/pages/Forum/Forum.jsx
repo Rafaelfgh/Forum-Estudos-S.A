@@ -62,11 +62,64 @@ export default function Forum() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // controla usuário e menu
+  const [user, setUser] = useState(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef(null);
+
+  // checa sessão ao montar e escuta mudanças de auth
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        if (supabase.auth.getUser) {
+          const { data } = await supabase.auth.getUser();
+          if (mounted) setUser(data?.user ?? null);
+        } else if (supabase.auth.user) {
+          if (mounted) setUser(supabase.auth.user());
+        }
+      } catch {
+        if (mounted) setUser(null);
+      }
+    })();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      mounted = false;
+      authListener?.subscription?.unsubscribe?.();
+    };
+  }, []);
+
+  // fecha menu ao clicar fora
+  useEffect(() => {
+    function handleDocClick(e) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setShowUserMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleDocClick);
+    return () => document.removeEventListener("mousedown", handleDocClick);
+  }, []);
+
   const handleLogout = async () => {
+    if (!user) return;
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Erro ao fazer logout:", error.message);
+    } else {
+      navigate("/");
     }
+  };
+
+  // desloga e vai para tela de login para permitir trocar de conta
+  const handleSwitchLogin = async () => {
+    setShowUserMenu(false);
+    await supabase.auth.signOut();
+    navigate("/login"); // ajuste se sua rota de login for diferente
   };
 
   const handleNotifClick = () => {
@@ -86,6 +139,13 @@ export default function Forum() {
       }
     };
   }, []);
+
+  // inicial do usuário (ou letra genérica quando não logado)
+  const userInitial = (() => {
+    if (!user) return "U";
+    const name = user.user_metadata?.full_name ?? user.email ?? "";
+    return (name.trim().charAt(0) || "U").toUpperCase();
+  })();
 
   return (
     <div className={styles.forum}>
@@ -125,19 +185,74 @@ export default function Forum() {
               </div>
             )}
 
-            <div className={styles.user}>
-              <span>R</span>
-              <FiChevronDown className={styles.chev} />
+            {/* botão do usuário funcional */}
+            <div className={styles.userWrapper} ref={userMenuRef}>
+              <button
+                className={styles.user}
+                aria-label="Menu do usuário"
+                onClick={() => setShowUserMenu((v) => !v)}
+              >
+                <span>{userInitial}</span>
+                <FiChevronDown className={styles.chev} />
+              </button>
+
+              {showUserMenu && (
+                <div className={styles.userMenu} role="menu">
+                  {user && (
+                    <div className={styles.userInfo}>
+                      <strong className={styles.userName}>
+                        {user.user_metadata?.full_name ?? user.email}
+                      </strong>
+                    </div>
+                  )}
+
+                  {user ? (
+                    <>
+                      <button
+                        className={styles.userMenuItem}
+                        onClick={handleSwitchLogin}
+                        role="menuitem"
+                      >
+                        Trocar de login
+                      </button>
+
+                      <button
+                        className={styles.userMenuItem}
+                        onClick={async () => {
+                          setShowUserMenu(false);
+                          await handleLogout();
+                        }}
+                        role="menuitem"
+                      >
+                        Sair
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className={styles.userMenuItem}
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        navigate("/login");
+                      }}
+                      role="menuitem"
+                    >
+                      Entrar
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
-             <button
-              className={styles.logoutBtn}
-              aria-label="Sair"
-              // ADICIONADO: 3. Chamar a função handleLogout no onClick
-              onClick={handleLogout}
-            >
-              <FiLogOut />
-            </button>
+            {/* botão Sair rápido (aparece apenas se usuário logado) */}
+            {user && (
+              <button
+                className={styles.logoutBtn}
+                aria-label="Sair"
+                onClick={handleLogout}
+              >
+                <FiLogOut />
+              </button>
+            )}
           </div>
         </header>
       </div>
