@@ -8,20 +8,18 @@ import Login from './pages/Login/Login'
 import Register from './pages/Register/Register'
 import Forum from './pages/Forum/Forum'
 
+import ProtectedRoute from './components/ProtectedRoute'
+
 
 function App() {
   return (
-    <div>
-      <BrowserRouter>
-        <div className="container">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/forum" element={<Forum />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-          </Routes>
-        </div>
-      </BrowserRouter>
+    <div className="container">
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/forum" element={<ProtectedRoute><Forum /></ProtectedRoute>} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
     </div>
   )
 }
