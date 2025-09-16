@@ -213,7 +213,7 @@ export default function Forum() {
                         onClick={handleSwitchLogin}
                         role="menuitem"
                       >
-                        Trocar de login
+                        Trocar de usuário
                       </button>
 
                       <button
