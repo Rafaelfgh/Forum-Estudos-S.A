@@ -2,6 +2,7 @@ import { useState } from 'react';
 import styles from "./Login.module.css";
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from "../../backend/supabaseClient"; 
+import { VscChromeClose } from "react-icons/vsc";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
@@ -41,9 +42,9 @@ export const Login = () => {
           type="button"
           className={styles.backButton}
           onClick={() => navigate("/")}
-          aria-label="Voltar"
+          aria-label="Voltar" 
         >
-          Voltar
+          <VscChromeClose />
         </button>
         <h1 className={styles.loginTitle}>Login</h1>
         <form onSubmit={handleLogin}>

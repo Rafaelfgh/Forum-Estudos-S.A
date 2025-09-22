@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import styles from "./Register.module.css";
 import { supabase } from '../../backend/supabaseClient';
+import { VscChromeClose } from "react-icons/vsc";
 
 const Cadastro = () => {
   const [name, setName] = useState('');
@@ -62,7 +63,7 @@ const Cadastro = () => {
   return (
     <div className={styles.cadastroContainer}>
       <form onSubmit={handleSubmit} className={styles.cadastroFormContainer}>
-        <button className={styles.backButton} onClick={() => navigate("/")}>Voltar</button>
+        <button className={styles.backButton} onClick={() => navigate("/")}><VscChromeClose /></button>
         <h1 className={styles.cadastroTitle}>Criar Conta</h1>
 
         <div className={styles.inputGroup}>
