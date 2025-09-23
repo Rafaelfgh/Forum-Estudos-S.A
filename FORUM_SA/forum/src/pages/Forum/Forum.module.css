@@ -436,10 +436,12 @@
 
 .modal {
   background: #fff;
-  padding: 2rem;
+  padding: 1.25rem;
   border-radius: 10px;
-  width: 600px;
-  max-width: 90%;
+  width: clamp(320px, 90%, 600px); /* mais responsivo */
+  max-width: 92%;
+  max-height: none; /* não usar scroll interno */
+  overflow: visible; /* permite que o modal se adapte sem scrolly interno */
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   box-sizing: border-box;
 }
@@ -464,8 +466,9 @@
 }
 
 .textarea {
-  height: 120px;
-  resize: none;
+  height: auto;
+  max-height: 28vh;
+  resize: vertical;
 }
 
 .tagsRow {
@@ -499,8 +502,11 @@
 .modalActions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   gap: 1rem;
+  position: relative;
+  background: transparent;
+  padding: 0;
 }
 
 .cancelBtn {

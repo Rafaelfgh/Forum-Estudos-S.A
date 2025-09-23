@@ -37,6 +37,9 @@ export const Login = () => {
 
   return (
     <div className={styles.loginContainer}>
+    <div className={styles.imageContainer}>
+      <img src="/imagem1.png" className={styles.loginImage} alt="Imagem de login" />
+    </div>
       <div className={styles.loginFormContainer}>
         <button
           type="button"

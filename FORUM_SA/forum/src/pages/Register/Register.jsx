@@ -62,6 +62,9 @@ const Cadastro = () => {
 
   return (
     <div className={styles.cadastroContainer}>
+    <div className={styles.imageContainer}>
+      <img src="/imagem1.png" className={styles.cadastroImage} alt="Imagem de login" />
+    </div>
       <form onSubmit={handleSubmit} className={styles.cadastroFormContainer}>
         <button className={styles.backButton} onClick={() => navigate("/")}><VscChromeClose /></button>
         <h1 className={styles.cadastroTitle}>Criar Conta</h1>
