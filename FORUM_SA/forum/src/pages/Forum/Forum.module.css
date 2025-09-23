@@ -35,8 +35,9 @@
 .logo {
   color: var(--blue);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 25px;
   margin: 0;
+  margin-left: 40px;
 }
 
 .searchWrapper {
@@ -62,6 +63,7 @@
   background: #f8fbff;
   outline: none;
   font-size: 14px;
+  max-width: 1230px;
   font-family: 'Montserrat', sans-serif;
 }
 
@@ -71,7 +73,7 @@
   gap: 12px;
   min-width: 300px;
   justify-content: flex-end;
-  margin-left: 475px;
+  margin-left: 515px;
 }
 
 .iconBtn,
