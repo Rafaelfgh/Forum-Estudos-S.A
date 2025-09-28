@@ -120,6 +120,7 @@
   cursor: pointer;
   font-family: "Montserrat", sans-serif;
   font-weight: 600;
+  line-height: 10px;
 }
 
 .imageContainer {
@@ -131,4 +132,5 @@
   width: 300px;
   height: auto;
   mix-blend-mode: darken;
+  margin-left: 20px;
 }
