@@ -1,37 +1,116 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaBookOpen, FaQuestionCircle, FaBullhorn, FaUsers, FaComments } from "react-icons/fa";
-import { FiSearch, FiBell, FiChevronDown, FiPlus, FiUpload, FiLogOut } from "react-icons/fi";
+import {
+  FaBookOpen,
+  FaQuestionCircle,
+  FaBullhorn,
+  FaUsers,
+  FaComments,
+} from "react-icons/fa";
+import {
+  FiSearch,
+  FiBell,
+  FiChevronDown,
+  FiPlus,
+  FiUpload,
+  FiLogOut,
+} from "react-icons/fi";
 import styles from "./Forum.module.css";
 
-import { supabase } from "../../backend/supabaseClient"; 
+import { supabase } from "../../backend/supabaseClient";
 
-// Lista de categorias fixas
 const categories = [
-  { id: 1, name: "Materiais de Estudo", description: "Compartilhe PDFs, resumos, mapas mentais e provas", icon: <FaBookOpen /> },
-  { id: 2, name: "Perguntas & Respostas", description: "Tire dúvidas e ajude outros colegas", icon: <FaQuestionCircle /> },
-  { id: 3, name: "Notícias de Concursos", description: "Fique por dentro das últimas novidades", icon: <FaBullhorn /> },
-  { id: 4, name: "Networking & Grupos", description: "Encontre parceiros de estudo", icon: <FaUsers /> },
-  { id: 5, name: "Motivação & Bate-papo", description: "Compartilhe experiências e motivação", icon: <FaComments /> },
+  {
+    id: 1,
+    name: "Materiais de Estudo",
+    description: "Compartilhe PDFs, resumos, mapas mentais e provas",
+    icon: <FaBookOpen />,
+  },
+  {
+    id: 2,
+    name: "Perguntas & Respostas",
+    description: "Tire dúvidas e ajude outros colegas",
+    icon: <FaQuestionCircle />,
+  },
+  {
+    id: 3,
+    name: "Notícias de Concursos",
+    description: "Fique por dentro das últimas novidades",
+    icon: <FaBullhorn />,
+  },
+  {
+    id: 4,
+    name: "Networking & Grupos",
+    description: "Encontre parceiros de estudo",
+    icon: <FaUsers />,
+  },
+  {
+    id: 5,
+    name: "Motivação & Bate-papo",
+    description: "Compartilhe experiências e motivação",
+    icon: <FaComments />,
+  },
 ];
 
 export default function Forum() {
   const navigate = useNavigate();
 
-  // usuário
-  const [user, setUser] = useState(null);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const userMenuRef = useRef(null);
+  const [imageFile, setImageFile] = useState(null);
+  // Estado para feedback visual durante o upload
+  const [isUploading, setIsUploading] = useState(false);
+  // Ref para acessar o input de arquivo escondido
+  const fileInputRef = useRef(null);
 
-  // categorias e modal
+  const [user, setUser] = useState(null);
+
+  // ADICIONE A LINHA ABAIXO
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  // --- MANTENHA A LÓGICA ORIGINAL DA PÁGINA PRINCIPAL ---
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
+
+  // --- LÓGICA PARA O MODAL ---
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [topicCategory, setTopicCategory] = useState(categories[0].id);
+
+  // 2. NOVO ESTADO APENAS PARA AS CATEGORIAS DO MODAL
+  const [modalCategories, setModalCategories] = useState([]); // Este buscará do Supabase
+
+  // Estado para guardar o ID da categoria selecionada no modal
+  const [topicCategory, setTopicCategory] = useState("");
+
+  // Estados para o título e conteúdo do tópico
+  const [topicTitle, setTopicTitle] = useState("");
+  const [topicContent, setTopicContent] = useState("");
 
   // notificações
   const [notificationsCount, setNotificationsCount] = useState(0);
   const [showNotif, setShowNotif] = useState(false);
   const notifTimer = useRef(null);
+
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    async function fetchModalCategories() {
+      // Use o nome da sua tabela de categorias no Supabase
+      // Selecionamos apenas 'id' e 'name', que é tudo que o <select> precisa
+      const { data, error } = await supabase
+        .from("category") // << MUDE AQUI para o nome da sua tabela
+        .select("id, name")
+        .order("name", { ascending: true });
+
+      if (error) {
+        console.error("Erro ao buscar categorias para o modal:", error);
+      } else if (data) {
+        setModalCategories(data);
+        // Define um valor padrão para o select, se houver dados
+        if (data.length > 0) {
+          setTopicCategory(data[0].id);
+        }
+      }
+    }
+
+    fetchModalCategories();
+  }, []); // [] garante que rode só uma vez
 
   // pega usuário logado
   useEffect(() => {
@@ -66,6 +145,75 @@ export default function Forum() {
     }, 5000);
   };
 
+  const handlePublishTopic = async () => {
+    if (!topicTitle.trim() || !topicContent.trim()) {
+      alert("Por favor, preencha o título e o conteúdo.");
+      return;
+    }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      alert("Você precisa estar logado para criar um post.");
+      return;
+    }
+
+    setIsUploading(true); // Inicia o estado de "carregando"
+    let imageUrl = null; // Inicia a URL da imagem como nula
+
+    // ETAPA DE UPLOAD DA IMAGEM
+    if (imageFile) {
+      // Cria um nome de arquivo único para evitar conflitos
+      const fileName = `${user.id}-${Date.now()}`;
+
+      // Substitua 'image-posts' pelo nome exato do seu bucket no Supabase
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("image-posts")
+        .upload(fileName, imageFile);
+
+      if (uploadError) {
+        console.error("Erro no upload da imagem:", uploadError);
+        alert("Falha ao enviar a imagem. Tente novamente.");
+        setIsUploading(false); // Para o "carregando"
+        return; // Interrompe a execução
+      }
+
+      // Se o upload deu certo, pega a URL pública
+      const { data: publicUrlData } = supabase.storage
+        .from("image-posts")
+        .getPublicUrl(uploadData.path);
+
+      imageUrl = publicUrlData.publicUrl;
+    }
+
+    // ETAPA DE INSERÇÃO NO BANCO DE DADOS
+    const newPost = {
+      title: topicTitle,
+      content: topicContent,
+      category_id: topicCategory,
+      user_id: user.id,
+      image_url: imageUrl, // Adiciona a URL da imagem (ou null se não houver imagem)
+    };
+
+    const { error: insertError } = await supabase
+      .from("posts")
+      .insert([newPost]);
+
+    setIsUploading(false); // Finaliza o estado de "carregando"
+
+    if (insertError) {
+      console.error("Erro ao criar o post:", insertError.message);
+      alert("Não foi possível criar o post. Tente novamente.");
+    } else {
+      alert("Post criado com sucesso!");
+      // Limpa tudo e fecha o modal
+      setTopicTitle("");
+      setTopicContent("");
+      setImageFile(null); // Limpa o arquivo de imagem
+      setIsModalOpen(false);
+    }
+  };
+
   // nome do usuário
   const userName = user?.user_metadata?.full_name ?? user?.email ?? "";
   const userInitial = userName ? userName.charAt(0).toUpperCase() : "";
@@ -74,6 +222,12 @@ export default function Forum() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
+  };
+
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
   };
 
   return (
@@ -107,7 +261,11 @@ export default function Forum() {
             </button>
 
             {showNotif && (
-              <div className={styles.notifMessage} role="status" aria-live="polite">
+              <div
+                className={styles.notifMessage}
+                role="status"
+                aria-live="polite"
+              >
                 {notificationsCount > 0
                   ? `Você tem ${notificationsCount} nova(s) notificação(ões)`
                   : "Nenhuma nova notificação"}
@@ -184,7 +342,9 @@ export default function Forum() {
           <div className={styles.mainHeader}>
             <div className={styles.titleBlock}>
               <h2 className={styles.mainTitle}>{selectedCategory.name}</h2>
-              <p className={styles.mainSubtitle}>{selectedCategory.description}</p>
+              <p className={styles.mainSubtitle}>
+                {selectedCategory.description}
+              </p>
             </div>
 
             <button
@@ -204,7 +364,7 @@ export default function Forum() {
         </main>
       </div>
 
-      {/* MODAL CRIAR TÓPICO */}
+      {/*/////////////////// MODAL CRIAR TÓPICO //////////////////////*/}
       {isModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -216,6 +376,8 @@ export default function Forum() {
               type="text"
               placeholder="Digite um título descritivo..."
               className={styles.input}
+              value={topicTitle} // Conecta o valor ao estado
+              onChange={(e) => setTopicTitle(e.target.value)} // Atualiza o estado a cada digitação
             />
 
             {/* conteúdo */}
@@ -223,6 +385,8 @@ export default function Forum() {
             <textarea
               placeholder="Descreva sua dúvida, compartilhe material ou inicie uma discussão..."
               className={styles.textarea}
+              value={topicContent} // Conecta o valor ao estado
+              onChange={(e) => setTopicContent(e.target.value)} // Atualiza o estado a cada digitação
             ></textarea>
 
             {/* categoria */}
@@ -232,29 +396,36 @@ export default function Forum() {
               value={topicCategory}
               onChange={(e) => setTopicCategory(Number(e.target.value))}
             >
-              {categories.map((cat) => (
+              {modalCategories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
                 </option>
               ))}
             </select>
 
-            {/* tags */}
-            <label className={styles.label}>Tags (opcional)</label>
-            <div className={styles.tagsRow}>
-              <input
-                type="text"
-                placeholder="Ex: matemática, enem, direito..."
-                className={styles.input}
-              />
-              <button className={styles.addTagBtn}>Adicionar</button>
-            </div>
 
             {/* arquivos */}
-            <label className={styles.label}>Anexar Arquivos (opcional)</label>
-            <div className={styles.fileUpload}>
+            <label className={styles.label}>Anexar Imagem</label>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              style={{ display: "none" }}
+              accept="image/png, image/jpeg, image/gif" // Aceita apenas imagens
+            />
+            <div
+              className={styles.fileUpload}
+              onClick={() => fileInputRef.current.click()} // Ao clicar aqui, aciona o input
+            >
               <FiUpload size={20} />
-              <p>Clique para anexar PDFs, imagens ou documentos</p>
+              {/* Mostra o nome do arquivo selecionado ou o texto padrão */}
+              {imageFile ? (
+                <p>
+                  Arquivo selecionado: <strong>{imageFile.name}</strong>
+                </p>
+              ) : (
+                <p>Clique para anexar uma imagem</p>
+              )}
             </div>
 
             {/* ações */}
@@ -265,7 +436,13 @@ export default function Forum() {
               >
                 Cancelar
               </button>
-              <button className={styles.publishBtn}>Publicar Tópico</button>
+              <button
+                className={styles.publishBtn}
+                onClick={handlePublishTopic}
+                disabled={isUploading} // Desabilita o botão durante o upload
+              >
+                {isUploading ? "Publicando..." : "Publicar Tópico"}
+              </button>
             </div>
           </div>
         </div>
