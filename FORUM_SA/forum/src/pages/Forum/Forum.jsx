@@ -56,45 +56,35 @@ export default function Forum() {
   const navigate = useNavigate();
 
   const [imageFile, setImageFile] = useState(null);
-  // Estado para feedback visual durante o upload
   const [isUploading, setIsUploading] = useState(false);
-  // Ref para acessar o input de arquivo escondido
   const fileInputRef = useRef(null);
 
   const [user, setUser] = useState(null);
-
-  // ADICIONE A LINHA ABAIXO
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  // --- MANTENHA A LÓGICA ORIGINAL DA PÁGINA PRINCIPAL ---
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
 
-  // --- LÓGICA PARA O MODAL ---
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 2. NOVO ESTADO APENAS PARA AS CATEGORIAS DO MODAL
-  const [modalCategories, setModalCategories] = useState([]); // Este buscará do Supabase
+  const [modalCategories, setModalCategories] = useState([]);
 
-  // Estado para guardar o ID da categoria selecionada no modal
   const [topicCategory, setTopicCategory] = useState("");
 
-  // Estados para o título e conteúdo do tópico
   const [topicTitle, setTopicTitle] = useState("");
   const [topicContent, setTopicContent] = useState("");
 
-  // notificações
   const [notificationsCount, setNotificationsCount] = useState(0);
   const [showNotif, setShowNotif] = useState(false);
   const notifTimer = useRef(null);
 
   const userMenuRef = useRef(null);
 
+  const [posts, setPosts] = useState([]);
+
   useEffect(() => {
     async function fetchModalCategories() {
-      // Use o nome da sua tabela de categorias no Supabase
-      // Selecionamos apenas 'id' e 'name', que é tudo que o <select> precisa
       const { data, error } = await supabase
-        .from("category") // << MUDE AQUI para o nome da sua tabela
+        .from("category")
         .select("id, name")
         .order("name", { ascending: true });
 
@@ -102,7 +92,6 @@ export default function Forum() {
         console.error("Erro ao buscar categorias para o modal:", error);
       } else if (data) {
         setModalCategories(data);
-        // Define um valor padrão para o select, se houver dados
         if (data.length > 0) {
           setTopicCategory(data[0].id);
         }
@@ -110,9 +99,8 @@ export default function Forum() {
     }
 
     fetchModalCategories();
-  }, []); // [] garante que rode só uma vez
+  }, []);
 
-  // pega usuário logado
   useEffect(() => {
     let mounted = true;
 
@@ -135,7 +123,32 @@ export default function Forum() {
     };
   }, []);
 
-  // mostra notificações
+  const fetchPosts = async (categoryId) => {
+    if (!categoryId) {
+      setPosts([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("posts")
+      .select("id, title, content, category_id, user_id, image_url, created_at")
+      .eq("category_id", categoryId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Erro ao buscar posts:", error);
+      setPosts([]);
+    } else {
+      setPosts(data ?? []);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedCategory?.id) {
+      fetchPosts(selectedCategory.id);
+    }
+  }, [selectedCategory]);
+
   const handleNotifClick = () => {
     setShowNotif(true);
     if (notifTimer.current) clearTimeout(notifTimer.current);
@@ -158,15 +171,12 @@ export default function Forum() {
       return;
     }
 
-    setIsUploading(true); // Inicia o estado de "carregando"
-    let imageUrl = null; // Inicia a URL da imagem como nula
+    setIsUploading(true);
+    let imageUrl = null;
 
-    // ETAPA DE UPLOAD DA IMAGEM
     if (imageFile) {
-      // Cria um nome de arquivo único para evitar conflitos
       const fileName = `${user.id}-${Date.now()}`;
 
-      // Substitua 'image-posts' pelo nome exato do seu bucket no Supabase
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("image-posts")
         .upload(fileName, imageFile);
@@ -174,11 +184,10 @@ export default function Forum() {
       if (uploadError) {
         console.error("Erro no upload da imagem:", uploadError);
         alert("Falha ao enviar a imagem. Tente novamente.");
-        setIsUploading(false); // Para o "carregando"
-        return; // Interrompe a execução
+        setIsUploading(false);
+        return;
       }
 
-      // Se o upload deu certo, pega a URL pública
       const { data: publicUrlData } = supabase.storage
         .from("image-posts")
         .getPublicUrl(uploadData.path);
@@ -186,39 +195,44 @@ export default function Forum() {
       imageUrl = publicUrlData.publicUrl;
     }
 
-    // ETAPA DE INSERÇÃO NO BANCO DE DADOS
     const newPost = {
       title: topicTitle,
       content: topicContent,
       category_id: topicCategory,
       user_id: user.id,
-      image_url: imageUrl, // Adiciona a URL da imagem (ou null se não houver imagem)
+      image_url: imageUrl,
     };
 
-    const { error: insertError } = await supabase
-      .from("posts")
-      .insert([newPost]);
+    const { error: insertError } = await supabase.from("posts").insert([newPost]);
 
-    setIsUploading(false); // Finaliza o estado de "carregando"
+    setIsUploading(false);
 
     if (insertError) {
       console.error("Erro ao criar o post:", insertError.message);
       alert("Não foi possível criar o post. Tente novamente.");
     } else {
       alert("Post criado com sucesso!");
-      // Limpa tudo e fecha o modal
       setTopicTitle("");
       setTopicContent("");
-      setImageFile(null); // Limpa o arquivo de imagem
+      setImageFile(null);
       setIsModalOpen(false);
+
+      if (selectedCategory?.id !== topicCategory) {
+        const found = modalCategories.find((c) => c.id === topicCategory);
+        setSelectedCategory({
+          id: topicCategory,
+          name: found?.name ?? "Categoria",
+          description: "",
+        });
+      } else {
+        fetchPosts(topicCategory);
+      }
     }
   };
 
-  // nome do usuário
   const userName = user?.user_metadata?.full_name ?? user?.email ?? "";
   const userInitial = userName ? userName.charAt(0).toUpperCase() : "";
 
-  // logout rápido
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
@@ -232,14 +246,12 @@ export default function Forum() {
 
   return (
     <div className={styles.forum}>
-      {/* TOPO */}
       <div className={styles.topbarContainer}>
         <header className={styles.topbar}>
           <div className={styles.topLeft}>
             <h1 className={styles.logo}>Estudos S.A</h1>
           </div>
 
-          {/* busca */}
           <div className={styles.searchWrapper}>
             <FiSearch className={styles.searchIcon} />
             <input
@@ -249,9 +261,7 @@ export default function Forum() {
             />
           </div>
 
-          {/* lado direito */}
           <div className={styles.topRight}>
-            {/* notificações */}
             <button
               className={styles.iconBtn}
               aria-label="Notificações"
@@ -272,7 +282,6 @@ export default function Forum() {
               </div>
             )}
 
-            {/* menu usuário */}
             <div className={styles.userWrapper} ref={userMenuRef}>
               <button
                 className={styles.user}
@@ -292,7 +301,6 @@ export default function Forum() {
               )}
             </div>
 
-            {/* botão logout rápido */}
             {user && (
               <button
                 className={styles.logoutBtn}
@@ -306,9 +314,7 @@ export default function Forum() {
         </header>
       </div>
 
-      {/* CONTEÚDO */}
       <div className={styles.content}>
-        {/* categorias */}
         <aside className={styles.sidebarCard}>
           <h2 className={styles.sidebarTitle}>Categorias</h2>
           <ul className={styles.categoryList}>
@@ -337,7 +343,6 @@ export default function Forum() {
           </ul>
         </aside>
 
-        {/* área principal */}
         <main className={styles.main}>
           <div className={styles.mainHeader}>
             <div className={styles.titleBlock}>
@@ -358,38 +363,61 @@ export default function Forum() {
             </button>
           </div>
 
-          <div className={styles.empty}>
-            Nenhum tópico nesta categoria ainda. Seja o primeiro a criar um!
-          </div>
+          {posts.length === 0 ? (
+            <div className={styles.empty}>
+              Nenhum tópico nesta categoria ainda. Seja o primeiro a criar um!
+            </div>
+          ) : (
+            <div className={styles.postList}>
+              {posts.map((p) => (
+                <article key={p.id} className={styles.postCard}>
+                  <h3 className={styles.postTitle}>{p.title}</h3>
+                  <p className={styles.postContent}>
+                    {p.content.length > 300
+                      ? p.content.slice(0, 300) + "..."
+                      : p.content}
+                  </p>
+                  {p.image_url && (
+                    <img
+                      src={p.image_url}
+                      alt={p.title}
+                      className={styles.postImage}
+                    />
+                  )}
+                  <div className={styles.postMeta}>
+                    <small>
+                      Publicado em {new Date(p.created_at).toLocaleString()}
+                    </small>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </main>
       </div>
 
-      {/*/////////////////// MODAL CRIAR TÓPICO //////////////////////*/}
       {isModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
             <h2>Novo Tópico</h2>
 
-            {/* título */}
             <label className={styles.label}>Título</label>
             <input
               type="text"
               placeholder="Digite um título descritivo..."
               className={styles.input}
-              value={topicTitle} // Conecta o valor ao estado
-              onChange={(e) => setTopicTitle(e.target.value)} // Atualiza o estado a cada digitação
+              value={topicTitle}
+              onChange={(e) => setTopicTitle(e.target.value)}
             />
 
-            {/* conteúdo */}
             <label className={styles.label}>Conteúdo</label>
             <textarea
               placeholder="Descreva sua dúvida, compartilhe material ou inicie uma discussão..."
               className={styles.textarea}
-              value={topicContent} // Conecta o valor ao estado
-              onChange={(e) => setTopicContent(e.target.value)} // Atualiza o estado a cada digitação
+              value={topicContent}
+              onChange={(e) => setTopicContent(e.target.value)}
             ></textarea>
 
-            {/* categoria */}
             <label className={styles.label}>Categoria</label>
             <select
               className={styles.input}
@@ -403,22 +431,19 @@ export default function Forum() {
               ))}
             </select>
 
-
-            {/* arquivos */}
             <label className={styles.label}>Anexar Imagem</label>
             <input
               type="file"
               ref={fileInputRef}
               onChange={handleFileSelect}
               style={{ display: "none" }}
-              accept="image/png, image/jpeg, image/gif" // Aceita apenas imagens
+              accept="image/png, image/jpeg, image/gif"
             />
             <div
               className={styles.fileUpload}
-              onClick={() => fileInputRef.current.click()} // Ao clicar aqui, aciona o input
+              onClick={() => fileInputRef.current.click()}
             >
               <FiUpload size={20} />
-              {/* Mostra o nome do arquivo selecionado ou o texto padrão */}
               {imageFile ? (
                 <p>
                   Arquivo selecionado: <strong>{imageFile.name}</strong>
@@ -428,7 +453,6 @@ export default function Forum() {
               )}
             </div>
 
-            {/* ações */}
             <div className={styles.modalActions}>
               <button
                 className={styles.cancelBtn}
@@ -439,7 +463,7 @@ export default function Forum() {
               <button
                 className={styles.publishBtn}
                 onClick={handlePublishTopic}
-                disabled={isUploading} // Desabilita o botão durante o upload
+                disabled={isUploading}
               >
                 {isUploading ? "Publicando..." : "Publicar Tópico"}
               </button>

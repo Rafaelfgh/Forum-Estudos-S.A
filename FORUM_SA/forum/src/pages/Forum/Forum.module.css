@@ -438,10 +438,10 @@
   background: #fff;
   padding: 1.25rem;
   border-radius: 10px;
-  width: clamp(320px, 90%, 600px); /* mais responsivo */
+  width: clamp(320px, 90%, 600px);
   max-width: 92%;
-  max-height: none; /* não usar scroll interno */
-  overflow: visible; /* permite que o modal se adapte sem scrolly interno */
+  max-height: none;
+  overflow: visible;
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   box-sizing: border-box;
 }
@@ -526,4 +526,43 @@
   border-radius: 6px;
   cursor: pointer;
   font-family: 'Montserrat', sans-serif;
+}
+
+/* Estilos para os posts */
+.postList {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.postCard {
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.04);
+  border: 1px solid rgba(15,23,42,0.03);
+}
+
+.postTitle {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.postContent {
+  color: var(--muted);
+  margin: 0 0 10px 0;
+  line-height: 1.45;
+}
+
+/* Imagem dos posts — tamanho reduzido */
+.postImage {
+  max-width: 500px;
+  max-height: 320px;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+  margin-top: 10px;
 }
