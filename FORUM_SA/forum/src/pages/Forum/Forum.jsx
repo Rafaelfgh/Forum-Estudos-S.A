@@ -14,6 +14,7 @@ import {
   FiPlus,
   FiUpload,
   FiLogOut,
+  FiTrash,
 } from "react-icons/fi";
 import styles from "./Forum.module.css";
 
@@ -230,6 +231,55 @@ export default function Forum() {
     }
   };
 
+  // Função para excluir post (visível só para autor)
+  const handleDeletePost = async (postId, imageUrl) => {
+    if (!confirm("Tem certeza que deseja excluir este post? Esta ação é irreversível.")) return;
+
+    setIsUploading(true);
+    try {
+      const { error: deleteError } = await supabase.from("posts").delete().eq("id", postId);
+
+      if (deleteError) {
+        console.error("Erro ao excluir post:", deleteError);
+        alert("Não foi possível excluir o post. Tente novamente.");
+        return;
+      }
+
+      // Tenta remover imagem do storage se a URL indicar o bucket "image-posts"
+      if (imageUrl && imageUrl.includes("/image-posts/")) {
+        try {
+          // extrai o path depois de /image-posts/
+          const parts = imageUrl.split("/image-posts/");
+          let path = parts[1] ?? "";
+          // remove query string se houver
+          path = path.split("?")[0];
+          const decodedPath = decodeURIComponent(path);
+          if (decodedPath) {
+            const { error: removeError } = await supabase.storage
+              .from("image-posts")
+              .remove([decodedPath]);
+            if (removeError) {
+              console.warn("Erro ao remover imagem do storage:", removeError);
+            }
+          }
+        } catch (e) {
+          console.warn("Falha ao tentar remover imagem do storage:", e);
+        }
+      }
+
+      // Atualiza lista de posts (recarrega da categoria atual)
+      if (selectedCategory?.id) {
+        fetchPosts(selectedCategory.id);
+      } else {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+      }
+
+      alert("Post excluído com sucesso.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const userName = user?.user_metadata?.full_name ?? user?.email ?? "";
   const userInitial = userName ? userName.charAt(0).toUpperCase() : "";
 
@@ -388,6 +438,19 @@ export default function Forum() {
                     <small>
                       Publicado em {new Date(p.created_at).toLocaleString()}
                     </small>
+
+                    {/* Botão de excluir visível apenas para o autor */}
+                    {user && user.id === p.user_id && (
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={() => handleDeletePost(p.id, p.image_url)}
+                        aria-label="Excluir post"
+                        disabled={isUploading}
+                        style={{ marginLeft: 12 }}
+                      >
+                        <FiTrash />
+                      </button>
+                    )}
                   </div>
                 </article>
               ))}
