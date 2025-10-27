@@ -75,6 +75,12 @@ export default function Forum() {
   const [topicTitle, setTopicTitle] = useState("");
   const [topicContent, setTopicContent] = useState("");
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
+  const [editTopicTitle, setEditTopicTitle] = useState("");
+  const [editTopicContent, setEditTopicContent] = useState("");
+  const [currentImageUrl, setCurrentImageUrl] = useState(null);
+
   const [notificationsCount, setNotificationsCount] = useState(0);
   const [showNotif, setShowNotif] = useState(false);
   const notifTimer = useRef(null);
@@ -292,6 +298,99 @@ export default function Forum() {
     }
   };
 
+  const handleOpenEditModal = (post) => {
+    setEditingPost(post);
+    setEditTopicTitle(post.title);
+    setEditTopicContent(post.content);
+    setCurrentImageUrl(post.image_url); // Define a imagem atual
+    setImageFile(null); // Limpa o arquivo de imagem novo para edição
+    setOpenPostMenuId(null); // Fecha o dropdown
+    setIsEditModalOpen(true); // Abre o modal
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingPost(null);
+    setEditTopicTitle("");
+    setEditTopicContent("");
+    setCurrentImageUrl(null);
+    setImageFile(null);
+  };
+
+  const handleEditPost = async () => {
+    if (!editTopicTitle.trim() || !editTopicContent.trim()) {
+      alert("Por favor, preencha o título e o conteúdo.");
+      return;
+    }
+
+    if (!editingPost) return;
+
+    setIsUploading(true);
+    let finalImageUrl = currentImageUrl;
+
+    // --- 1. Lógica de Upload/Atualização de Imagem ---
+    if (imageFile) {
+      // Se um novo arquivo foi selecionado, faz o upload
+      const fileName = `${user.id}-${Date.now()}-edit`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("image-posts")
+        .upload(fileName, imageFile);
+
+      if (uploadError) {
+        console.error("Erro no upload da nova imagem:", uploadError);
+        alert("Falha ao enviar a nova imagem. Tente novamente.");
+        setIsUploading(false);
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("image-posts")
+        .getPublicUrl(uploadData.path);
+
+      finalImageUrl = publicUrlData.publicUrl;
+
+      // TENTA REMOVER A IMAGEM ANTIGA SE ELA EXISTIR
+      if (currentImageUrl && currentImageUrl.includes("/image-posts/")) {
+        try {
+          const parts = currentImageUrl.split("/image-posts/");
+          let path = parts[1] ?? "";
+          path = path.split("?")[0];
+          const decodedPath = decodeURIComponent(path);
+          if (decodedPath) {
+            await supabase.storage.from("image-posts").remove([decodedPath]);
+          }
+        } catch (e) {
+          console.warn("Falha ao remover imagem antiga do storage:", e);
+        }
+      }
+    }
+
+    // --- 2. Atualizar o Post no Banco de Dados ---
+    const updatedPost = {
+      title: editTopicTitle,
+      content: editTopicContent,
+      image_url: finalImageUrl,
+    };
+
+    const { error: updateError } = await supabase
+      .from("posts")
+      .update(updatedPost)
+      .eq("id", editingPost.id);
+
+    setIsUploading(false);
+
+    if (updateError) {
+      console.error("Erro ao atualizar o post:", updateError.message);
+      alert("Não foi possível salvar as alterações. Tente novamente.");
+    } else {
+      alert("Post atualizado com sucesso!");
+      handleCloseEditModal();
+      // Recarrega os posts para mostrar a atualização
+      fetchPosts(selectedCategory.id);
+    }
+  };
+
   const userName = user?.user_metadata?.full_name ?? user?.email ?? "";
   const userInitial = userName ? userName.charAt(0).toUpperCase() : "";
 
@@ -474,12 +573,7 @@ export default function Forum() {
                             <button
                               role="menuitem"
                               className={styles.menuItem}
-                              onClick={() => {
-                                alert(
-                                  "Funcionalidade de Edição ainda não implementada!"
-                                );
-                                setOpenPostMenuId(null);
-                              }}
+                              onClick={() => handleOpenEditModal(p)} // <-- CHAMAR A NOVA FUNÇÃO AQUI
                             >
                               Editar
                             </button>
@@ -582,6 +676,83 @@ export default function Forum() {
           </div>
         </div>
       )}
+
+      {isEditModalOpen && editingPost && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h2>Editar Tópico</h2>
+
+            <label className={styles.label}>Título</label>
+            <input
+              type="text"
+              placeholder="Digite um título descritivo..."
+              className={styles.input}
+              value={editTopicTitle}
+              onChange={(e) => setEditTopicTitle(e.target.value)}
+            />
+
+            <label className={styles.label}>Conteúdo</label>
+            <textarea
+              placeholder="Descreva sua dúvida, compartilhe material ou inicie uma discussão..."
+              className={styles.textarea}
+              value={editTopicContent}
+              onChange={(e) => setEditTopicContent(e.target.value)}
+            ></textarea>
+
+            {/* Categoria é mantida, mas não pode ser editada neste modal para simplicidade */}
+            <label className={styles.label}>Categoria (Não editável)</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={selectedCategory.name}
+              readOnly
+              disabled
+            />
+
+            <label className={styles.label}>Anexar Imagem</label>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              style={{ display: "none" }}
+              accept="image/png, image/jpeg, image/gif"
+            />
+            <div
+              className={styles.fileUpload}
+              onClick={() => fileInputRef.current.click()}
+            >
+              <FiUpload size={20} />
+              {imageFile ? (
+                <p>
+                  Novo arquivo: <strong>{imageFile.name}</strong> (Será enviado)
+                </p>
+              ) : currentImageUrl ? (
+                <p>
+                  Imagem atual: <strong>{currentImageUrl.split('/').pop().split('?')[0]}</strong>. Clique para trocar.
+                </p>
+              ) : (
+                <p>Clique para anexar uma imagem</p>
+              )}
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                className={styles.cancelBtn}
+                onClick={handleCloseEditModal}
+              >
+                Cancelar
+              </button>
+              <button
+                className={styles.publishBtn}
+                onClick={handleEditPost} // <-- CHAMA A FUNÇÃO DE EDIÇÃO
+                disabled={isUploading}
+              >
+                {isUploading ? "Salvando..." : "Salvar Alterações"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
