@@ -284,6 +284,8 @@
 .main {
   flex: 1;
   padding: 8px 4px;
+  padding-left: 80px;
+  padding-top: 20px;
 }
 
 .mainHeader {
@@ -317,13 +319,15 @@
   background: var(--blue);
   color: #fff;
   border: none;
-  padding: 8px 12px;
+  padding: 14px 18px;
   border-radius: 10px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(37,99,235,0.12);
   transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms cubic-bezier(.2,.8,.2,1), filter 220ms;
   will-change: transform, box-shadow;
+  margin-right: 85px;
+  font-size: 1.1em;
 }
 
 .createBtn:hover {
@@ -541,6 +545,7 @@
   padding: 14px;
   box-shadow: 0 6px 18px rgba(15,23,42,0.04);
   border: 1px solid rgba(15,23,42,0.03);
+  margin-right: 800px;
 }
 
 .postTitle {
@@ -557,12 +562,86 @@
 
 /* Imagem dos posts — tamanho reduzido */
 .postImage {
-  max-width: 500px;
-  max-height: 320px;
+  max-width: 700px;
+  max-height: 480px;
   width: 100%;
   height: auto;
   object-fit: cover;
   border-radius: 6px;
   display: block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Container que engloba o botão de 3 pontos e o dropdown */
+.postActionsWrapper {
+  position: relative;
+  display: inline-block;
+  margin-left: auto; /* Empurra para a direita dentro do postMeta */
+}
+
+/* Botão de 3 pontos */
+.postMenuBtn {
+  background: none;
+  border: none;
+  color: var(--text-color); /* Use a cor de texto padrão */
+  cursor: pointer;
+  padding: 5px;
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s;
+  line-height: 1;
+}
+
+.postMenuBtn:hover {
+  background-color: var(--color-light-gray); /* Cor de fundo ao passar o mouse */
+}
+
+/* Dropdown Menu */
+.postMenuDropdown {
+  position: absolute;
+  right: 0;
+  top: 100%; /* Aparece abaixo do botão */
+  z-index: 10;
+  background-color: white;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius);
+  min-width: 120px;
+  margin-top: 5px; /* Espaço entre o botão e o menu */
+  overflow: hidden;
+}
+
+/* Item dentro do menu */
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-color-dark);
+  transition: background-color 0.15s;
+  font-size: 0.9rem;
+}
+
+.menuItem:hover {
+  background-color: var(--color-light-gray);
+}
+
+/* Estilo específico para o item de exclusão */
+.deleteItem {
+  color: var(--color-danger); /* Cor vermelha para exclusão */
+}
+
+.deleteItem:hover {
+  background-color: var(--color-danger-light); /* Fundo claro de perigo */
+}
+
+/* Ajuste no postMeta para alinhar o novo wrapper */
+.postMeta {
+  display: flex; /* Adicione display flex */
+  justify-content: space-between; /* Espaço entre a data e o menu */
+  align-items: center;
   margin-top: 10px;
 }

@@ -15,6 +15,7 @@ import {
   FiUpload,
   FiLogOut,
   FiTrash,
+  FiMoreVertical,
 } from "react-icons/fi";
 import styles from "./Forum.module.css";
 
@@ -81,6 +82,7 @@ export default function Forum() {
   const userMenuRef = useRef(null);
 
   const [posts, setPosts] = useState([]);
+  const [openPostMenuId, setOpenPostMenuId] = useState(null);
 
   useEffect(() => {
     async function fetchModalCategories() {
@@ -204,7 +206,9 @@ export default function Forum() {
       image_url: imageUrl,
     };
 
-    const { error: insertError } = await supabase.from("posts").insert([newPost]);
+    const { error: insertError } = await supabase
+      .from("posts")
+      .insert([newPost]);
 
     setIsUploading(false);
 
@@ -233,11 +237,19 @@ export default function Forum() {
 
   // Função para excluir post (visível só para autor)
   const handleDeletePost = async (postId, imageUrl) => {
-    if (!confirm("Tem certeza que deseja excluir este post? Esta ação é irreversível.")) return;
+    if (
+      !confirm(
+        "Tem certeza que deseja excluir este post? Esta ação é irreversível."
+      )
+    )
+      return;
 
     setIsUploading(true);
     try {
-      const { error: deleteError } = await supabase.from("posts").delete().eq("id", postId);
+      const { error: deleteError } = await supabase
+        .from("posts")
+        .delete()
+        .eq("id", postId);
 
       if (deleteError) {
         console.error("Erro ao excluir post:", deleteError);
@@ -439,17 +451,53 @@ export default function Forum() {
                       Publicado em {new Date(p.created_at).toLocaleString()}
                     </small>
 
-                    {/* Botão de excluir visível apenas para o autor */}
                     {user && user.id === p.user_id && (
-                      <button
-                        className={styles.deleteBtn}
-                        onClick={() => handleDeletePost(p.id, p.image_url)}
-                        aria-label="Excluir post"
-                        disabled={isUploading}
-                        style={{ marginLeft: 12 }}
-                      >
-                        <FiTrash />
-                      </button>
+                      <div className={styles.postActionsWrapper}>
+                        {" "}
+                        {/* Adicionar um wrapper para posicionamento */}
+                        <button
+                          className={styles.postMenuBtn} // Estilizar este botão
+                          onClick={() =>
+                            setOpenPostMenuId(
+                              p.id === openPostMenuId ? null : p.id
+                            )
+                          }
+                          aria-label="Opções do post"
+                        >
+                          <FiMoreVertical size={20} />
+                        </button>
+                        {openPostMenuId === p.id && (
+                          <div className={styles.postMenuDropdown} role="menu">
+                            {" "}
+                            {/* Estilizar este dropdown */}
+                            {/* Opção de Editar (Placeholder) */}
+                            <button
+                              role="menuitem"
+                              className={styles.menuItem}
+                              onClick={() => {
+                                alert(
+                                  "Funcionalidade de Edição ainda não implementada!"
+                                );
+                                setOpenPostMenuId(null);
+                              }}
+                            >
+                              Editar
+                            </button>
+                            {/* Opção de Excluir */}
+                            <button
+                              role="menuitem"
+                              className={`${styles.menuItem} ${styles.deleteItem}`} // Adicionar classe para cor vermelha
+                              onClick={() => {
+                                handleDeletePost(p.id, p.image_url);
+                                setOpenPostMenuId(null); // Fechar após a ação
+                              }}
+                              disabled={isUploading}
+                            >
+                              Excluir
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </article>
