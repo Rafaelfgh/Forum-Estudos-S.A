@@ -457,10 +457,21 @@ export default function Forum() {
                 <div className={styles.userMenu} role="menu">
                   <div className={styles.userInfo}>
                     <strong className={styles.userName}>{userName}</strong>
+                    <button
+  className={styles.menuItem}
+  onClick={() => {
+    navigate("/usuario");
+    setShowUserMenu(false);
+  }}
+>
+  Meu Perfil
+</button>
+
                   </div>
                 </div>
               )}
             </div>
+            
 
             {user && (
               <button
