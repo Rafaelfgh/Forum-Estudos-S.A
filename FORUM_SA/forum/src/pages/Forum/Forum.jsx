@@ -19,6 +19,8 @@ import {
 } from "react-icons/fi";
 import styles from "./Forum.module.css";
 
+import * as BadWords from "bad-words";
+
 import { supabase } from "../../backend/supabaseClient";
 
 const categories = [
@@ -89,6 +91,87 @@ export default function Forum() {
 
   const [posts, setPosts] = useState([]);
   const [openPostMenuId, setOpenPostMenuId] = useState(null);
+  const [commentsMap, setCommentsMap] = useState({}); // { postId: [comments] }
+  const [commentInputs, setCommentInputs] = useState({});
+  const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+
+  // Lista inicial de palavrões/termos indevidos em PT-BR e variações comuns.
+  const ptBrWords = [
+    "puta",
+    "porra",
+    "caralho",
+    "merda",
+    "bosta",
+    "fod",
+    "foda",
+    "foda-se",
+    "cacete",
+    "pau",
+    "cu",
+    "cuzao",
+    "vai se foder",
+    "filho da puta",
+    "escroto",
+    "idiota",
+    "burro",
+    "otario",
+    "otário",
+    "vagabundo",
+    "vagabunda"
+  ];
+  // Palavras em inglês extras (o pacote já cobre a maioria, mas reforçamos algumas)
+  const extraWords = ["fuck", "shit", "bitch", "asshole"];
+  // Criador robusto de instância do bad-words (lida com CJS/ESM interop)
+  const createFilterInstance = () => {
+    let Ctor = null;
+    try {
+      if (typeof BadWords === "function") Ctor = BadWords;
+      else if (BadWords && typeof BadWords.default === "function") Ctor = BadWords.default;
+      else if (BadWords && typeof BadWords.Filter === "function") Ctor = BadWords.Filter;
+      else if (BadWords && typeof BadWords.BadWordsFilter === "function") Ctor = BadWords.BadWordsFilter;
+    } catch (e) {
+      Ctor = null;
+    }
+
+    if (Ctor) {
+      try {
+        return new Ctor();
+      } catch (e) {
+        // continue to fallback
+      }
+    }
+
+    // Fallback simples: busca substrings das palavras proibidas
+    class SimpleFilter {
+      constructor() {
+        this._words = new Set();
+      }
+      isProfane(text) {
+        if (!text) return false;
+        const s = text.toLowerCase();
+        for (const w of this._words) if (s.includes(w)) return true;
+        return false;
+      }
+      clean(text) {
+        if (!this.isProfane(text)) return text;
+        let out = text;
+        for (const w of this._words) {
+          const esc = w.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
+          const re = new RegExp(esc, "gi");
+          out = out.replace(re, (m) => "*".repeat(m.length));
+        }
+        return out;
+      }
+      addWords(...words) {
+        words.forEach((w) => this._words.add(w.toLowerCase()));
+      }
+    }
+
+    return new SimpleFilter();
+  };
+
+  const profaneFilter = createFilterInstance();
+  profaneFilter.addWords(...ptBrWords, ...extraWords);
 
   useEffect(() => {
     async function fetchModalCategories() {
@@ -157,6 +240,43 @@ export default function Forum() {
       fetchPosts(selectedCategory.id);
     }
   }, [selectedCategory]);
+
+  // Busca comentários associados aos posts carregados
+  useEffect(() => {
+    const loadCommentsForPosts = async () => {
+      if (!posts || posts.length === 0) {
+        setCommentsMap({});
+        return;
+      }
+
+      const postIds = posts.map((p) => p.id);
+      try {
+        const { data, error } = await supabase
+          .from("comments")
+          .select("id, post_id, name, user_id, created_at")
+          .in("post_id", postIds)
+          .order("created_at", { ascending: true });
+
+        if (error) {
+          console.error("Erro ao buscar comentários:", error);
+          setCommentsMap({});
+          return;
+        }
+
+        const map = {};
+        (data || []).forEach((c) => {
+          if (!map[c.post_id]) map[c.post_id] = [];
+          map[c.post_id].push(c);
+        });
+        setCommentsMap(map);
+      } catch (e) {
+        console.error("Falha ao carregar comentários:", e);
+        setCommentsMap({});
+      }
+    };
+
+    loadCommentsForPosts();
+  }, [posts]);
 
   const handleNotifClick = () => {
     setShowNotif(true);
@@ -295,6 +415,82 @@ export default function Forum() {
       alert("Post excluído com sucesso.");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleSubmitComment = async (postId) => {
+    const text = (commentInputs[postId] || "").trim();
+    if (!text) {
+      alert("Escreva algo antes de enviar o comentário.");
+      return;
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      alert("Você precisa estar logado para comentar.");
+      return;
+    }
+
+    // Verifica palavrões/termos indevidos
+    const cleaned = profaneFilter.clean(text);
+    if (profaneFilter.isProfane(text) || cleaned !== text) {
+      alert("Seu comentário contém palavras proibidas. Remova-as e tente novamente.");
+      return;
+    }
+
+    setIsCommentSubmitting(true);
+    try {
+      const newComment = {
+        post_id: postId,
+        user_id: user.id,
+        name: text,
+      };
+
+      const { error } = await supabase.from("comments").insert([newComment]);
+      if (error) {
+        console.error("Erro ao inserir comentário:", error);
+        alert("Não foi possível enviar o comentário. Tente novamente.");
+      } else {
+        // Recarrega apenas os comentários deste post
+        const { data: fresh, error: fetchErr } = await supabase
+          .from("comments")
+          .select("id, post_id, name, user_id, created_at")
+          .eq("post_id", postId)
+          .order("created_at", { ascending: true });
+
+        if (fetchErr) {
+          console.error("Erro ao atualizar comentários:", fetchErr);
+        } else {
+          setCommentsMap((prev) => ({ ...prev, [postId]: fresh ?? [] }));
+        }
+
+        setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+      }
+    } finally {
+      setIsCommentSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId, postId) => {
+    if (!confirm("Tem certeza que deseja excluir este comentário?")) return;
+    setIsCommentSubmitting(true);
+    try {
+      const { error } = await supabase.from("comments").delete().eq("id", commentId);
+      if (error) {
+        console.error("Erro ao excluir comentário:", error);
+        alert("Não foi possível excluir o comentário.");
+      } else {
+        // Atualiza localmente
+        setCommentsMap((prev) => {
+          const copy = { ...prev };
+          copy[postId] = (copy[postId] || []).filter((c) => c.id !== commentId);
+          return copy;
+        });
+      }
+    } finally {
+      setIsCommentSubmitting(false);
     }
   };
 
@@ -604,6 +800,50 @@ export default function Forum() {
                         )}
                       </div>
                     )}
+                  </div>
+                  {/* Comentários */}
+                  <div className={styles.commentsSection}>
+                    <h4 className={styles.commentsTitle}>Comentários</h4>
+                    <div className={styles.commentsList}>
+                      {(commentsMap[p.id] || []).map((c) => (
+                        <div key={c.id} className={styles.commentItem}>
+                          <div className={styles.commentContent}>{c.name}</div>
+                          <div className={styles.commentMeta}>
+                            <small>{new Date(c.created_at).toLocaleString()}</small>
+                            {user && user.id === c.user_id && (
+                              <button
+                                className={styles.commentDelete}
+                                onClick={() => handleDeleteComment(c.id, p.id)}
+                                disabled={isCommentSubmitting}
+                              >
+                                Excluir
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Campo de novo comentário */}
+                    <div className={styles.commentForm}>
+                      <textarea
+                        placeholder="Escreva um comentário..."
+                        value={commentInputs[p.id] || ""}
+                        onChange={(e) =>
+                          setCommentInputs((prev) => ({ ...prev, [p.id]: e.target.value }))
+                        }
+                        className={styles.commentInput}
+                      />
+                      <div className={styles.commentActions}>
+                        <button
+                          className={styles.publishBtn}
+                          onClick={() => handleSubmitComment(p.id)}
+                          disabled={isCommentSubmitting}
+                        >
+                          Enviar
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </article>
               ))}

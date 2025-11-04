@@ -326,7 +326,7 @@
   box-shadow: 0 6px 18px rgba(37,99,235,0.12);
   transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms cubic-bezier(.2,.8,.2,1), filter 220ms;
   will-change: transform, box-shadow;
-  margin-right: 85px;
+  margin-right: 5px;
   font-size: 1.1em;
 }
 
@@ -545,7 +545,7 @@
   padding: 14px;
   box-shadow: 0 6px 18px rgba(15,23,42,0.04);
   border: 1px solid rgba(15,23,42,0.03);
-  margin-right: 800px;
+  margin-right: 500px;
 }
 
 .postTitle {
@@ -644,4 +644,103 @@
   justify-content: space-between; /* Espaço entre a data e o menu */
   align-items: center;
   margin-top: 10px;
+}
+
+/* ================= Comentários ================= */
+.commentsSection {
+  margin-top: 12px;
+  border-top: 1px solid #eef2f8;
+  padding-top: 12px;
+}
+
+.commentsTitle {
+  font-size: 14px;
+  margin: 0 0 8px 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.commentItem {
+  background: #f8fbff;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1px solid rgba(15,23,42,0.02);
+}
+
+.commentName {
+  color: #111827;
+  font-size: 14px;
+  line-height: 1.4;
+  flex: 1;
+  word-break: break-word;
+}
+
+.commentMeta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  white-space: nowrap;
+  margin-left: 12px;
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.commentDelete {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.commentDelete:hover {
+  background: rgba(239,68,68,0.08);
+}
+
+.commentForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.commentInput {
+  width: 100%;
+  min-height: 56px;
+  resize: vertical;
+  padding: 10px 1px;
+  border-radius: 8px;
+  border: 1px solid #e6eefb;
+  background: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+}
+
+.commentActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Mobile tweaks */
+@media (max-width: 880px) {
+  .postCard { margin-right: 0; }
+  .search { width: 100%; max-width: 100%; }
+  .topRight { margin-left: 0; }
 }
