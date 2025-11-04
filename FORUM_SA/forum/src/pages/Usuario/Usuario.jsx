@@ -39,7 +39,7 @@ export default function Usuario() {
     fetchUser();
   }, []);
 
-  // Fecha dropdown ao clicar fora
+ 
   useEffect(() => {
     function handleClickOutside(e) {
       Object.values(dropdownRefs.current).forEach(ref => {
@@ -98,6 +98,9 @@ export default function Usuario() {
       <div className={styles.topbarContainer}>
         <div className={styles.topbarLeft}>
           <h2 className={styles.logoForum}>Meu Perfil</h2>
+        </div>
+        <div className ={styles.topbarCenter}>
+          <img src="/imagem1.png" alt="Logo do Fórum" className={styles.logoImage} onClick={() => window.location.href = '/forum'} />
         </div>
         <button className={styles.backBtn} onClick={() => window.history.back()}>Voltar ao Fórum</button>
       </div>
@@ -206,6 +209,7 @@ export default function Usuario() {
                 >
                   <button className={styles.menuItem} onClick={() => { setEditingPostId(post.id); setEditedPostContent(post.content); }}>Editar</button>
                   <button className={`${styles.menuItem} ${styles.deleteItem}`} onClick={() => handleDeletePost(post.id)}>Excluir</button>
+                     
                 </div>
               </div>
             </div>

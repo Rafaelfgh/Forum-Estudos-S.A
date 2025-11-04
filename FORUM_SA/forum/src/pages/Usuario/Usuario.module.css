@@ -39,6 +39,10 @@
   color: var(--blue);
   cursor: pointer;
 }
+.logoImage {
+  height: 40px;
+  cursor: pointer;
+}
 
 .backBtn {
   background: var(--blue);
@@ -127,6 +131,8 @@
   padding: 16px;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
   position: relative;
+  max-width: 50%; /* Adicionado para controlar o tamanho do post */
+  width: auto; /* Permite que o tamanho do post seja ajustável */
 }
 
 .postTitle {
@@ -148,7 +154,17 @@
   font-size: 12px;
   color: var(--muted);
 }
-
+.postImage {
+    width: 100%;
+    max-width: 500px;
+    height: auto; 
+    object-fit: cover;
+    display: block;
+    border-radius: 12px;
+    aspect-ratio: 16/9; 
+     
+    
+  }
 .postActionsWrapper {
   position: relative;
 }
@@ -291,11 +307,14 @@ textarea.inputField {
   }
 
   .profileImage {
-    width: 100px;
-    height: 100px;
+    width: 150px;
+    height: 150px;
+    
+   
   }
 
-  .postImage {
-    max-height: 300px;
-  }
+  
+  
+  
+
 }
