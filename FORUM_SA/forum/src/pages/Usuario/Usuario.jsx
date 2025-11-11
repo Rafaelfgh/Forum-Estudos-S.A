@@ -13,6 +13,8 @@ export default function Usuario() {
   const [avatarFile, setAvatarFile] = useState(null);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editedPostContent, setEditedPostContent] = useState("");
+  const [userComments, setUserComments] = useState([]);
+  const [postsMap, setPostsMap] = useState({}); // Novo estado para armazenar posts
   const dropdownRefs = useRef({});
 
   useEffect(() => {
@@ -24,6 +26,32 @@ export default function Usuario() {
         setEmail(user.email);
         setAvatarUrl(user.user_metadata?.avatar_url || "");
         fetchPosts(user.id);
+        fetchUserComments(user.id); // Chama a função para buscar comentários do usuário
+      }
+    }
+
+    async function fetchUserComments(userId) {
+      const { data: comments } = await supabase
+        .from("comments")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      setUserComments(comments || []);
+      
+      // Buscar os posts correspondentes aos comentários
+      const postIds = comments.map(comment => comment.post_id);
+      if (postIds.length > 0) {
+        const { data: posts } = await supabase
+          .from("posts")
+          .select("id, title")
+          .in("id", postIds);
+        
+        const postsMap = {};
+        posts.forEach(post => {
+          postsMap[post.id] = post.title;
+        });
+        setPostsMap(postsMap); // Armazena os posts em um mapa
       }
     }
 
@@ -93,7 +121,6 @@ export default function Usuario() {
 
   return (
     <div className={styles.usuarioPage}>
-      
       {/* Topbar */}
       <div className={styles.topbarContainer}>
         <div className={styles.topbarLeft}>
@@ -130,7 +157,7 @@ export default function Usuario() {
 
         {/* Senha */}
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Alterar Senha</h2>
+          <h2 className={styles.sectionTitle}>Alterar Senha</h2> 
           <input
             className={styles.inputField}
             value={password}
@@ -139,24 +166,6 @@ export default function Usuario() {
             type="password"
           />
         </section>
-
-        {/* Foto do perfil */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Adicionar Foto de Perfil</h2>
-          <input
-            type="file"
-            className={styles.inputField}
-            onChange={(e) => setAvatarFile(e.target.files[0])}
-          />
-          {(avatarFile || avatarUrl) && (
-            <img
-              src={avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl}
-              alt="Avatar"
-              className={styles.profileImage}
-            />
-          )}
-        </section>
-
         {/* Botão salvar */}
         <button className={styles.saveBtn} onClick={handleSave}>
           Salvar Alterações
@@ -209,9 +218,23 @@ export default function Usuario() {
                 >
                   <button className={styles.menuItem} onClick={() => { setEditingPostId(post.id); setEditedPostContent(post.content); }}>Editar</button>
                   <button className={`${styles.menuItem} ${styles.deleteItem}`} onClick={() => handleDeletePost(post.id)}>Excluir</button>
-                     
                 </div>
               </div>
+            </div>
+          ))}
+        </section>
+
+        {/* Comentários do usuário em qualquer post */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Seus Comentários</h2>
+          {userComments.length === 0 && <p>Nenhum comentário ainda.</p>}
+          {userComments.map(comment => (
+            <div key={comment.id} className={styles.commentCard}>
+              <h4 className={styles.postTitle}>{postsMap[comment.post_id] || "Post não encontrado"}</h4>
+              <p className={styles.commentContent}>{comment.content}</p>
+              <small className={styles.commentDate}>
+                {new Date(comment.created_at).toLocaleString()}
+              </small>
             </div>
           ))}
         </section>
