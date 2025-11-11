@@ -231,7 +231,7 @@ export default function Usuario() {
           {userComments.map(comment => (
             <div key={comment.id} className={styles.commentCard}>
               <h4 className={styles.postTitle}>{postsMap[comment.post_id] || "Post não encontrado"}</h4>
-              <p className={styles.commentContent}>{comment.content}</p>
+              <p className={styles.commentContent}>{comment.name}</p>
               <small className={styles.commentDate}>
                 {new Date(comment.created_at).toLocaleString()}
               </small>

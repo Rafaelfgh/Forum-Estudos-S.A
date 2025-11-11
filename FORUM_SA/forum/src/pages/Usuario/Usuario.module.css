@@ -88,7 +88,7 @@
 }
 
 .inputField {
-  width: 100%;
+  width: 95%;
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #ccc;
@@ -114,7 +114,7 @@
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  align-self: flex-start;
+  align-self: flex-end;
   transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms cubic-bezier(.2,.8,.2,1), filter 220ms;
   font-weight: 600;
   font-size: 1.1em;
