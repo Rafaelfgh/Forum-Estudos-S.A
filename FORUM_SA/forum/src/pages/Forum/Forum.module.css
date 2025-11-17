@@ -758,3 +758,87 @@
   .search { width: 100%; max-width: 100%; }
   .topRight { margin-left: 0; }
 }
+
+.commentMenuWrapper {
+  position: relative; /* Essencial para o dropdown flutuar perto do botão */
+  display: inline-block;
+  margin-left: auto; /* Empurra para o canto direito se estiver num flex container */
+}
+
+.commentMenuBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.commentMenuBtn:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.commentDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  z-index: 50;
+  min-width: 110px;
+}
+
+.dropdownDeleteBtn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  text-align: left;
+  cursor: pointer;
+  color: #dc2626; /* Vermelho */
+  font-size: 0.85rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.dropdownDeleteBtn:hover {
+  background-color: #fee2e2; /* Vermelho bem clarinho */
+}
+
+.dropdownDeleteBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Adicione isso no final do Forum.module.css */
+
+/* Classe condicional para quando o menu deve abrir para cima */
+.dropUp {
+  top: auto;          /* Anula o 'top' padrão */
+  bottom: 100%;       /* Posiciona o fundo do menu no topo do botão */
+  margin-bottom: 5px; /* Um pequeno espaço para não colar */
+  
+  /* Opcional: ajuste a sombra para parecer que a luz vem de cima, se quiser */
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15); 
+}
+
+.commentDropdown {
+  /* Remova position, top e right daqui se existirem */
+  background-color: white;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  min-width: 110px;
+  z-index: 9999;
+}

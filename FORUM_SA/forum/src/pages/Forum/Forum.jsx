@@ -94,6 +94,8 @@ export default function Forum() {
   const [commentsMap, setCommentsMap] = useState({}); // { postId: [comments] }
   const [commentInputs, setCommentInputs] = useState({});
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [openCommentMenuId, setOpenCommentMenuId] = useState(null);
 
   // Lista inicial de palavrões/termos indevidos em PT-BR e variações comuns.
   const ptBrWords = [
@@ -478,6 +480,48 @@ export default function Forum() {
     }
   };
 
+  const handleOpenCommentMenu = (e, commentId) => {
+    e.stopPropagation(); // Evita cliques indesejados
+
+    if (openCommentMenuId === commentId) {
+      setOpenCommentMenuId(null);
+      return;
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const menuHeight = 50; // Altura estimada do menu
+
+    const spaceBelow = windowHeight - rect.bottom;
+    const openUpwards = spaceBelow < 100;
+
+    setMenuPosition({
+      top: openUpwards ? rect.top - menuHeight : rect.bottom,
+      right: window.innerWidth - rect.right,
+    });
+
+    setOpenCommentMenuId(commentId);
+  };
+
+  useEffect(() => {
+    const handleScrollOrResize = () => {
+      if (openCommentMenuId) {
+        setOpenCommentMenuId(null);
+      }
+    };
+
+    if (openCommentMenuId) {
+      // Adiciona ouvintes para scroll e resize na janela global
+      window.addEventListener("scroll", handleScrollOrResize, true); // 'true' pega o scroll de qualquer elemento
+      window.addEventListener("resize", handleScrollOrResize);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
+  }, [openCommentMenuId]);
+
   const handleDeleteComment = async (commentId, postId) => {
     if (!confirm("Tem certeza que deseja excluir este comentário?")) return;
     setIsCommentSubmitting(true);
@@ -810,7 +854,10 @@ export default function Forum() {
                   {/* Comentários */}
                   <div className={styles.commentsSection}>
                     <h4 className={styles.commentsTitle}>Comentários</h4>
-                    <div className={styles.commentsList}>
+                    <div
+                      className={styles.commentsList}
+                      onScroll={() => setOpenCommentMenuId(null)}
+                    >
                       {(commentsMap[p.id] || []).map((c) => (
                         <div key={c.id} className={styles.commentItem}>
                           <div className={styles.commentContent}>{c.name}</div>
@@ -818,14 +865,49 @@ export default function Forum() {
                             <small>
                               {new Date(c.created_at).toLocaleString()}
                             </small>
+
                             {user && user.id === c.user_id && (
-                              <button
-                                className={styles.commentDelete}
-                                onClick={() => handleDeleteComment(c.id, p.id)}
-                                disabled={isCommentSubmitting}
-                              >
-                                Excluir
-                              </button>
+                              <div className={styles.commentMenuWrapper}>
+                                {/* Botão com a nova função onClick */}
+                                <button
+                                  className={styles.commentMenuBtn}
+                                  onClick={(e) =>
+                                    handleOpenCommentMenu(e, c.id)
+                                  }
+                                  title="Opções"
+                                >
+                                  <FiMoreVertical size={16} />
+                                </button>
+
+                                {/* Menu com posição fixa calculada */}
+                                {openCommentMenuId === c.id && (
+                                  <div
+                                    className={styles.commentDropdown}
+                                    style={{
+                                      position: "fixed",
+                                      top: menuPosition.top,
+                                      right: menuPosition.right,
+                                      left: "auto",
+                                      zIndex: 9999,
+                                    }}
+                                  >
+                                    <button
+                                      className={styles.dropdownDeleteBtn}
+                                      onClick={() => {
+                                        handleDeleteComment(c.id, p.id);
+                                        setOpenCommentMenuId(null);
+                                      }}
+                                      disabled={isCommentSubmitting}
+                                    >
+                                      <FiTrash
+                                        size={14}
+                                        style={{ marginRight: "6px" }}
+                                      />{" "}
+                                      Excluir
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -944,8 +1026,7 @@ export default function Forum() {
                    {" "}
           <div className={styles.modal}>
                         <h2>Editar Tópico</h2>           {" "}
-            <label className={styles.label}>Título</label>
-                       {" "}
+            <label className={styles.label}>Título</label>           {" "}
             <input
               type="text"
               placeholder="Digite um título descritivo..."
@@ -964,8 +1045,8 @@ export default function Forum() {
                        {" "}
             {/* Categoria é mantida, mas não pode ser editada neste modal para simplicidade */}
                        {" "}
-            <label className={styles.label}>Categoria (Não editável)</label>
-                       {" "}
+            <label className={styles.label}>Categoria (Não editável)</label>   
+                   {" "}
             <input
               type="text"
               className={styles.input}
@@ -973,8 +1054,8 @@ export default function Forum() {
               readOnly
               disabled
             />
-                        <label className={styles.label}>Anexar Imagem</label>
-                       {" "}
+                        <label className={styles.label}>Anexar Imagem</label>   
+                   {" "}
             <input
               type="file"
               ref={fileInputRef}
