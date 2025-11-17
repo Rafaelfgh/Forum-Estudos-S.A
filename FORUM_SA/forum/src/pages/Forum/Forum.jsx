@@ -117,7 +117,7 @@ export default function Forum() {
     "otario",
     "otário",
     "vagabundo",
-    "vagabunda"
+    "vagabunda",
   ];
   // Palavras em inglês extras (o pacote já cobre a maioria, mas reforçamos algumas)
   const extraWords = ["fuck", "shit", "bitch", "asshole"];
@@ -126,9 +126,12 @@ export default function Forum() {
     let Ctor = null;
     try {
       if (typeof BadWords === "function") Ctor = BadWords;
-      else if (BadWords && typeof BadWords.default === "function") Ctor = BadWords.default;
-      else if (BadWords && typeof BadWords.Filter === "function") Ctor = BadWords.Filter;
-      else if (BadWords && typeof BadWords.BadWordsFilter === "function") Ctor = BadWords.BadWordsFilter;
+      else if (BadWords && typeof BadWords.default === "function")
+        Ctor = BadWords.default;
+      else if (BadWords && typeof BadWords.Filter === "function")
+        Ctor = BadWords.Filter;
+      else if (BadWords && typeof BadWords.BadWordsFilter === "function")
+        Ctor = BadWords.BadWordsFilter;
     } catch (e) {
       Ctor = null;
     }
@@ -436,7 +439,9 @@ export default function Forum() {
     // Verifica palavrões/termos indevidos
     const cleaned = profaneFilter.clean(text);
     if (profaneFilter.isProfane(text) || cleaned !== text) {
-      alert("Seu comentário contém palavras proibidas. Remova-as e tente novamente.");
+      alert(
+        "Seu comentário contém palavras proibidas. Remova-as e tente novamente."
+      );
       return;
     }
 
@@ -477,7 +482,10 @@ export default function Forum() {
     if (!confirm("Tem certeza que deseja excluir este comentário?")) return;
     setIsCommentSubmitting(true);
     try {
-      const { error } = await supabase.from("comments").delete().eq("id", commentId);
+      const { error } = await supabase
+        .from("comments")
+        .delete()
+        .eq("id", commentId);
       if (error) {
         console.error("Erro ao excluir comentário:", error);
         alert("Não foi possível excluir o comentário.");
@@ -654,20 +662,18 @@ export default function Forum() {
                   <div className={styles.userInfo}>
                     <strong className={styles.userName}>{userName}</strong>
                     <button
-  className={styles.menuItem}
-  onClick={() => {
-    navigate("/usuario");
-    setShowUserMenu(false);
-  }}
->
-  Meu Perfil
-</button>
-
+                      className={styles.menuItem}
+                      onClick={() => {
+                        navigate("/usuario");
+                        setShowUserMenu(false);
+                      }}
+                    >
+                      Editar Perfil
+                    </button>
                   </div>
                 </div>
               )}
             </div>
-            
 
             {user && (
               <button
@@ -809,7 +815,9 @@ export default function Forum() {
                         <div key={c.id} className={styles.commentItem}>
                           <div className={styles.commentContent}>{c.name}</div>
                           <div className={styles.commentMeta}>
-                            <small>{new Date(c.created_at).toLocaleString()}</small>
+                            <small>
+                              {new Date(c.created_at).toLocaleString()}
+                            </small>
                             {user && user.id === c.user_id && (
                               <button
                                 className={styles.commentDelete}
@@ -830,7 +838,10 @@ export default function Forum() {
                         placeholder="Escreva um comentário..."
                         value={commentInputs[p.id] || ""}
                         onChange={(e) =>
-                          setCommentInputs((prev) => ({ ...prev, [p.id]: e.target.value }))
+                          setCommentInputs((prev) => ({
+                            ...prev,
+                            [p.id]: e.target.value,
+                          }))
                         }
                         className={styles.commentInput}
                       />
@@ -929,81 +940,98 @@ export default function Forum() {
       )}
 
       {isEditModalOpen && editingPost && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h2>Editar Tópico</h2>
-
-            <label className={styles.label}>Título</label>
-            <input
-              type="text"
-              placeholder="Digite um título descritivo..."
-              className={styles.input}
-              value={editTopicTitle}
-              onChange={(e) => setEditTopicTitle(e.target.value)}
-            />
-
-            <label className={styles.label}>Conteúdo</label>
-            <textarea
-              placeholder="Descreva sua dúvida, compartilhe material ou inicie uma discussão..."
-              className={styles.textarea}
-              value={editTopicContent}
-              onChange={(e) => setEditTopicContent(e.target.value)}
-            ></textarea>
-
-            {/* Categoria é mantida, mas não pode ser editada neste modal para simplicidade */}
-            <label className={styles.label}>Categoria (Não editável)</label>
-            <input
-              type="text"
-              className={styles.input}
-              value={selectedCategory.name}
-              readOnly
-              disabled
-            />
-
-            <label className={styles.label}>Anexar Imagem</label>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileSelect}
-              style={{ display: "none" }}
-              accept="image/png, image/jpeg, image/gif"
-            />
-            <div
-              className={styles.fileUpload}
-              onClick={() => fileInputRef.current.click()}
-            >
-              <FiUpload size={20} />
-              {imageFile ? (
-                <p>
-                  Novo arquivo: <strong>{imageFile.name}</strong> (Será enviado)
-                </p>
-              ) : currentImageUrl ? (
-                <p>
-                  Imagem atual: <strong>{currentImageUrl.split('/').pop().split('?')[0]}</strong>. Clique para trocar.
-                </p>
-              ) : (
-                <p>Clique para anexar uma imagem</p>
-              )}
-            </div>
-
-            <div className={styles.modalActions}>
-              <button
-                className={styles.cancelBtn}
-                onClick={handleCloseEditModal}
-              >
-                Cancelar
-              </button>
-              <button
-                className={styles.publishBtn}
-                onClick={handleEditPost} // <-- CHAMA A FUNÇÃO DE EDIÇÃO
-                disabled={isUploading}
-              >
-                {isUploading ? "Salvando..." : "Salvar Alterações"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        <div className={styles.modalOverlay}>
+                   {" "}
+          <div className={styles.modal}>
+                        <h2>Editar Tópico</h2>           {" "}
+            <label className={styles.label}>Título</label>
+                       {" "}
+            <input
+              type="text"
+              placeholder="Digite um título descritivo..."
+              className={styles.input}
+              value={editTopicTitle}
+              onChange={(e) => setEditTopicTitle(e.target.value)}
+            />
+                        <label className={styles.label}>Conteúdo</label>       
+               {" "}
+            <textarea
+              placeholder="Descreva sua dúvida, compartilhe material ou inicie uma discussão..."
+              className={styles.textarea}
+              value={editTopicContent}
+              onChange={(e) => setEditTopicContent(e.target.value)}
+            ></textarea>
+                       {" "}
+            {/* Categoria é mantida, mas não pode ser editada neste modal para simplicidade */}
+                       {" "}
+            <label className={styles.label}>Categoria (Não editável)</label>
+                       {" "}
+            <input
+              type="text"
+              className={styles.input}
+              value={selectedCategory.name}
+              readOnly
+              disabled
+            />
+                        <label className={styles.label}>Anexar Imagem</label>
+                       {" "}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              style={{ display: "none" }}
+              accept="image/png, image/jpeg, image/gif"
+            />
+                       {" "}
+            <div
+              className={styles.fileUpload}
+              onClick={() => fileInputRef.current.click()}
+            >
+                            <FiUpload size={20} />             {" "}
+              {imageFile ? (
+                <p>
+                                    Novo arquivo:{" "}
+                  <strong>{imageFile.name}</strong> (Será enviado)              
+                   {" "}
+                </p>
+              ) : currentImageUrl ? (
+                <p>
+                                    Imagem atual:{" "}
+                  <strong>
+                    {currentImageUrl.split("/").pop().split("?")[0]}
+                  </strong>
+                  . Clique para trocar.                {" "}
+                </p>
+              ) : (
+                <p>Clique para anexar uma imagem</p>
+              )}
+                         {" "}
+            </div>
+                       {" "}
+            <div className={styles.modalActions}>
+                           {" "}
+              <button
+                className={styles.cancelBtn}
+                onClick={handleCloseEditModal}
+              >
+                                Cancelar              {" "}
+              </button>
+                           {" "}
+              <button
+                className={styles.publishBtn}
+                onClick={handleEditPost} // <-- CHAMA A FUNÇÃO DE EDIÇÃO
+                disabled={isUploading}
+              >
+                               {" "}
+                {isUploading ? "Salvando..." : "Salvar Alterações"}             {" "}
+              </button>
+                         {" "}
+            </div>
+                     {" "}
+          </div>
+                 {" "}
+        </div>
+      )}
     </div>
   );
 }
