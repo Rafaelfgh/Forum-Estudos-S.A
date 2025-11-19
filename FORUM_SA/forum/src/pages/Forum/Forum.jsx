@@ -228,7 +228,9 @@ export default function Forum() {
 
     const { data, error } = await supabase
       .from("posts")
-      .select("id, title, content, category_id, user_id, image_url, created_at")
+      .select(
+        "id, title, content, category_id, user_id, image_url, created_at, profiles:user_id(full_name)"
+      )
       .eq("category_id", categoryId)
       .order("created_at", { ascending: false });
 
@@ -236,6 +238,7 @@ export default function Forum() {
       console.error("Erro ao buscar posts:", error);
       setPosts([]);
     } else {
+      console.log("Dados do Post com Perfil:", data);
       setPosts(data ?? []);
     }
   };
@@ -258,7 +261,9 @@ export default function Forum() {
       try {
         const { data, error } = await supabase
           .from("comments")
-          .select("id, post_id, name, user_id, created_at")
+          .select(
+            "id, post_id, name, user_id, created_at, profiles:user_id(full_name)"
+          )
           .in("post_id", postIds)
           .order("created_at", { ascending: true });
 
@@ -463,7 +468,7 @@ export default function Forum() {
         // Recarrega apenas os comentários deste post
         const { data: fresh, error: fetchErr } = await supabase
           .from("comments")
-          .select("id, post_id, name, user_id, created_at")
+          .select("id, post_id, name, user_id, created_at, profiles:user_id(full_name)")
           .eq("post_id", postId)
           .order("created_at", { ascending: true });
 
@@ -789,6 +794,7 @@ export default function Forum() {
             <div className={styles.postList}>
               {posts.map((p) => (
                 <article key={p.id} className={styles.postCard}>
+                  <h2>{p.profiles?.full_name ?? "Usuário Desconhecido"}</h2>
                   <h3 className={styles.postTitle}>{p.title}</h3>
                   <p className={styles.postContent}>
                     {p.content.length > 300
@@ -860,7 +866,13 @@ export default function Forum() {
                     >
                       {(commentsMap[p.id] || []).map((c) => (
                         <div key={c.id} className={styles.commentItem}>
-                          <div className={styles.commentContent}>{c.name}</div>
+                          <div className={styles.commentContent}>
+                            {/* Use c.profiles?.full_name para exibir o nome do autor do comentário */}
+                            <strong>
+                              {c.profiles?.full_name ?? "Usuário Desconhecido"}
+                            </strong><br />
+                            {c.name}
+                          </div>
                           <div className={styles.commentMeta}>
                             <small>
                               {new Date(c.created_at).toLocaleString()}
