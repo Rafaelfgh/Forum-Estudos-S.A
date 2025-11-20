@@ -8,7 +8,7 @@ import Login from './pages/Login/Login'
 import Register from './pages/Register/Register'
 import Forum from './pages/Forum/Forum'
 import Usuario from './pages/Usuario/Usuario'
-
+import MeusPosts from "./pages/Poste/MeusPosts";
 import ProtectedRoute from './components/ProtectedRoute'
 
 
@@ -21,6 +21,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/usuario" element={<ProtectedRoute><Usuario /></ProtectedRoute>} />
+        <Route path="/meus-posts" element={<ProtectedRoute><MeusPosts /></ProtectedRoute>} />
       </Routes>
     </div>
   )

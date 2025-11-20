@@ -719,6 +719,24 @@ export default function Forum() {
                     >
                       Editar Perfil
                     </button>
+                     <button
+                      className={styles.menuItem}
+                      onClick={() => {
+                        navigate("/meus-posts");
+                        setShowUserMenu(false);
+                      }}
+                    >
+                      <button
+                        className={styles.menuItem}
+                        onClick={() => {
+                          navigate("/meus-posts");
+                          setShowUserMenu(false);
+                        }}
+                      >
+                        Meus Posts
+                      </button>
+                      </button>
+                     
                   </div>
                 </div>
               )}
