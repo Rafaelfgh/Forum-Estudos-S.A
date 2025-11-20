@@ -1,0 +1,289 @@
+:root {
+  --blue: #2563eb;
+  --blue-dark: #1e40af;
+  --muted: #6b7280;
+  --bg-start: #f6fbff;
+  --bg-end: #ffffff;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  --radius: 14px;
+
+  --fade-in: fadeIn 0.4s ease forwards;
+  --slide-up: slideUp 0.4s ease forwards;
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================================= */
+/* PAGE */
+/* ========================================================= */
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--bg-start), var(--bg-end) 70%);
+  font-family: "Montserrat", sans-serif;
+  padding-bottom: 40px;
+  animation: var(--fade-in);
+}
+
+/* ========================================================= */
+/* TOPBAR (compatível com o novo JSX) */
+/* ========================================================= */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+}
+
+.logoImage {
+  height: 42px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.logoImage:hover {
+  transform: scale(1.05);
+}
+
+.topControls {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Botão voltar alinhado direitinho */
+.backBtn {
+ background: var(--blue);
+  color: white;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(37,99,235,0.12);
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms cubic-bezier(.2,.8,.2,1), filter 220ms;
+  will-change: transform, box-shadow;
+  font-weight: 600;
+  font-size: 1.0em;
+}
+
+.backBtn:hover {
+  transform: translateY(-2px);
+  background: var(--blue-dark);
+}
+
+.sectionTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--blue-dark);
+}
+
+.profileLink {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  ;
+}
+
+
+/* ========================================================= */
+/* CONTAINER */
+/* ========================================================= */
+
+.container {
+  max-width: 750px;
+  margin: 40px auto;
+  padding: 0 20px;
+  animation: var(--slide-up);
+}
+
+/* ========================================================= */
+/* POST CARD */
+/* ========================================================= */
+
+.postCard {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: 0 6px 18px rgba(36, 100, 250, 0.06);
+  margin-bottom: 20px;
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: var(--fade-in);
+}
+
+.postCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+}
+
+.postTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.postImage {
+  width: 100%;
+  border-radius: 12px;
+  margin: 12px 0;
+  object-fit: cover;
+  max-height: 350px;
+  animation: var(--fade-in);
+}
+
+.postContent {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.postAuthor {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+/* ========================================================= */
+/* EDIÇÃO */
+/* ========================================================= */
+
+.inputField {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-family: "Montserrat", sans-serif;
+}
+
+.saveBtn,
+.cancelBtn {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 8px;
+  transition: 0.2s ease;
+}
+
+.saveBtn {
+  background: var(--blue);
+  color: #fff;
+}
+.saveBtn:hover {
+  background: var(--blue-dark);
+}
+
+.cancelBtn {
+  background: #e5e7eb;
+  color: #333;
+}
+
+.cancelBtn:hover {
+  background: #d1d5db;
+}
+
+/* ========================================================= */
+/* MENU */
+/* ========================================================= */
+
+.postActionsWrapper {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.postMenuBtn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 4px;
+  transition: 0.2s ease;
+}
+
+.postMenuBtn:hover {
+  color: var(--blue-dark);
+}
+
+.postMenuDropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 28px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  min-width: 140px;
+  z-index: 20;
+}
+
+.menuItem {
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.menuItem:hover {
+  background: #f3f4f6;
+}
+
+.deleteItem {
+  color: var(--danger);
+}
+.deleteItem:hover {
+  background: var(--danger-light);
+}
+
+/* ========================================================= */
+/* RESPONSIVE */
+/* ========================================================= */
+
+@media (max-width: 600px) {
+  .topControls {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sectionTitle {
+    font-size: 20px;
+  }
+
+  .postCard {
+    padding: 16px;
+  }
+
+  .postImage {
+    max-height: 240px;
+  }
+}
