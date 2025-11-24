@@ -663,7 +663,7 @@ export default function Forum() {
       <div className={styles.topbarContainer}>
         <header className={styles.topbar}>
           <div className={styles.topLeft}>
-            <h1 className={styles.logo}>Estudos S.A</h1>
+          <img src="imagem1.png" alt="Logo" className={styles.minhaImagem}/>
           </div>
 
           <div className={styles.searchWrapper}>

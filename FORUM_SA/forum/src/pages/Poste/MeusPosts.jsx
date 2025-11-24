@@ -92,7 +92,7 @@ export default function MeusPosts() {
       
       <div className={styles.topbar}>
         
-        <div className={styles.profileLink} onClick={() => window.location.href = "/perfil"}>
+        <div className={styles.profileLink}>
             Meus Posts
         </div>
         
@@ -106,7 +106,7 @@ export default function MeusPosts() {
         </div>
 
         <button className={styles.backBtn} onClick={() => window.location.href = "/forum"}>
-          Voltar ao Fórum
+          Voltar
         </button>
       </div>
 

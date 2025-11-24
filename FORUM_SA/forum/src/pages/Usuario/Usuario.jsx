@@ -12,16 +12,16 @@ export default function Usuario() {
   const nameInputRef = useRef(null);
 
   // --- ESTADOS DO ACORDEÃO ---
-  const [isSecurityOpen, setIsSecurityOpen] = useState(false); // Controla se abre/fecha
+  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
 
-  // --- ESTADOS DE SEGURANÇA (Email e Senha) ---
+  // --- ESTADOS DE SEGURANÇA ---
   const [newEmail, setNewEmail] = useState("");
-  const [passwordForEmail, setPasswordForEmail] = useState(""); 
+  const [passwordForEmail, setPasswordForEmail] = useState("");
   const [loadingEmail, setLoadingEmail] = useState(false);
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [passwordForPassword, setPasswordForPassword] = useState(""); 
+  const [passwordForPassword, setPasswordForPassword] = useState("");
   const [loadingPassword, setLoadingPassword] = useState(false);
 
   useEffect(() => {
@@ -30,13 +30,13 @@ export default function Usuario() {
       if (user) {
         setUser(user);
         setName(user.user_metadata?.full_name || "");
-        setNewEmail(user.email); 
+        setNewEmail(user.email);
       }
     }
     fetchUser();
   }, []);
 
-  // --- LÓGICA DE NOME (Mantida) ---
+  // --- LÓGICA DE NOME ---
   const handleNameAction = async () => {
     if (!isEditingName) {
       setIsEditingName(true);
@@ -44,9 +44,14 @@ export default function Usuario() {
       return;
     }
     setLoadingName(true);
-    const { error } = await supabase.auth.updateUser({ data: { full_name: name } });
+    const { error } = await supabase.auth.updateUser({
+      data: { full_name: name },
+    });
     if (error) alert("Erro: " + error.message);
-    else { alert("Nome atualizado!"); setIsEditingName(false); }
+    else {
+      alert("Nome atualizado!");
+      setIsEditingName(false);
+    }
     setLoadingName(false);
   };
 
@@ -55,113 +60,220 @@ export default function Usuario() {
     if (!passwordForEmail) return alert("Digite sua senha atual.");
     setLoadingEmail(true);
     const { error: loginError } = await supabase.auth.signInWithPassword({
-      email: user.email, password: passwordForEmail,
+      email: user.email,
+      password: passwordForEmail,
     });
-    if (loginError) { setLoadingEmail(false); return alert("Senha incorreta."); }
+    if (loginError) {
+      setLoadingEmail(false);
+      return alert("Senha incorreta.");
+    }
 
     const { error } = await supabase.auth.updateUser({ email: newEmail });
     if (error) alert("Erro: " + error.message);
-    else { alert("Verifique seu novo email."); setPasswordForEmail(""); }
+    else {
+      alert("Verifique seu novo email.");
+      setPasswordForEmail("");
+    }
     setLoadingEmail(false);
   };
 
   // --- LÓGICA DE SENHA ---
   const handleUpdatePassword = async () => {
     if (!passwordForPassword) return alert("Digite sua senha atual.");
-    if (newPassword !== confirmNewPassword) return alert("Senhas não conferem.");
+    if (newPassword !== confirmNewPassword)
+      return alert("Senhas não conferem.");
     setLoadingPassword(true);
     const { error: loginError } = await supabase.auth.signInWithPassword({
-      email: user.email, password: passwordForPassword,
+      email: user.email,
+      password: passwordForPassword,
     });
-    if (loginError) { setLoadingPassword(false); return alert("Senha atual incorreta."); }
+    if (loginError) {
+      setLoadingPassword(false);
+      return alert("Senha atual incorreta.");
+    }
 
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) alert("Erro: " + error.message);
-    else { alert("Senha alterada!"); setPasswordForPassword(""); setNewPassword(""); setConfirmNewPassword(""); }
+    else {
+      alert("Senha alterada!");
+      setPasswordForPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    }
     setLoadingPassword(false);
+  };
+
+  // --- LÓGICA DE LOGOUT ---
+  const handleLogout = async () => {
+    const confirm = window.confirm("Tem certeza que deseja sair?");
+    if (confirm) {
+      await supabase.auth.signOut();
+      window.location.href = "/"; 
+    }
   };
 
   if (!user) return <p>Carregando...</p>;
 
   return (
     <div className={styles.usuarioPage}>
+      
+      {/* --- TOPBAR RESTAURADA --- */}
       <div className={styles.topbarContainer}>
+        
+        {/* Lado Esquerdo: Título */}
         <h2 className={styles.logoForum}>Meu Perfil</h2>
-        <button className={styles.backBtn} onClick={() => window.location.href = "/forum"}>Voltar</button>
+
+        {/* Centro: Imagem (Adicionada de volta) */}
+        <img
+            src="/imagem1.png"
+            alt="Logo"
+            className={styles.logoImage}
+            onClick={() => (window.location.href = "/forum")}
+        />
+
+        {/* Lado Direito: Botão Voltar */}
+        <button
+          className={styles.backBtn}
+          onClick={() => (window.location.href = "/forum")}
+        >
+          Voltar
+        </button>
       </div>
 
       <div className={styles.usuarioContainer}>
-
-        {/* --- CARD 1: PERFIL (NOME) --- */}
+        
+        {/* --- CARD 1: PERFIL --- */}
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>Dados Pessoais</h3>
           <section className={styles.section}>
             <label className={styles.label}>Nome de Exibição</label>
             <input
               ref={nameInputRef}
-              className={`${styles.inputField} ${isEditingName ? styles.editable : styles.readOnly}`}
+              className={`${styles.inputField} ${
+                isEditingName ? styles.editable : styles.readOnly
+              }`}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Seu nome"
               disabled={!isEditingName}
             />
           </section>
-          <button className={styles.primaryBtn} onClick={handleNameAction} disabled={loadingName}>
-            {loadingName ? "Salvando..." : (isEditingName ? "Salvar" : "Alterar Nome")}
-          </button>
-          {isEditingName && (
-            <button className={styles.cancelBtn} onClick={() => { setIsEditingName(false); setName(user.user_metadata?.full_name || ""); }}>
-              Cancelar
+          
+          <div className={styles.actionsRow}>
+            <button
+              className={styles.primaryBtn}
+              onClick={handleNameAction}
+              disabled={loadingName}
+            >
+              {loadingName ? "Salvando..." : isEditingName ? "Salvar" : "Alterar Nome"}
             </button>
-          )}
+            {isEditingName && (
+              <button
+                className={styles.cancelBtn}
+                onClick={() => {
+                  setIsEditingName(false);
+                  setName(user.user_metadata?.full_name || "");
+                }}
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* --- CARD 2: ACORDEÃO DE SEGURANÇA --- */}
+        {/* --- CARD 2: SEGURANÇA --- */}
         <div className={styles.card}>
-          
-          {/* Cabeçalho do Acordeão (Clicável) */}
-          <div 
-            className={styles.accordionHeader} 
+          <div
+            className={styles.accordionHeader}
             onClick={() => setIsSecurityOpen(!isSecurityOpen)}
           >
-            <h3 className={styles.cardTitle} style={{marginBottom: 0}}>Segurança</h3>
-            {/* Ícone da setinha que gira */}
-            <span className={`${styles.arrow} ${isSecurityOpen ? styles.arrowUp : styles.arrowDown}`}>
+            <h3 className={styles.cardTitle} style={{ marginBottom: 0 }}>
+              Segurança
+            </h3>
+            <span
+              className={`${styles.arrow} ${
+                isSecurityOpen ? styles.arrowUp : styles.arrowDown
+              }`}
+            >
               ▼
             </span>
           </div>
 
-          {/* Conteúdo do Acordeão (Só renderiza se estiver aberto) */}
           {isSecurityOpen && (
             <div className={styles.accordionContent}>
-              <p className={styles.helperText}>Gerencie seu email e senha. Alterações exigem sua senha atual.</p>
-              
+              <p className={styles.helperText}>
+                Gerencie seu email e senha. Alterações exigem sua senha atual.
+              </p>
               <hr className={styles.divider} />
 
-              {/* BLOCO EMAIL */}
               <h4 className={styles.subTitle}>Alterar Email</h4>
               <div className={styles.formGrid}>
-                <input className={styles.inputField} value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Novo E-mail" />
-                <input className={styles.inputField} value={passwordForEmail} onChange={(e) => setPasswordForEmail(e.target.value)} placeholder="Senha atual" type="password" />
+                <input
+                  className={styles.inputField}
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="Novo E-mail"
+                />
+                <input
+                  className={styles.inputField}
+                  value={passwordForEmail}
+                  onChange={(e) => setPasswordForEmail(e.target.value)}
+                  placeholder="Senha atual"
+                  type="password"
+                />
               </div>
-              <button className={styles.warningBtn} onClick={handleUpdateEmail} disabled={loadingEmail}>
+              <button
+                className={styles.warningBtn}
+                onClick={handleUpdateEmail}
+                disabled={loadingEmail}
+              >
                 {loadingEmail ? "Verificando..." : "Atualizar Email"}
               </button>
 
               <hr className={styles.divider} />
 
-              {/* BLOCO SENHA */}
               <h4 className={styles.subTitle}>Alterar Senha</h4>
               <div className={styles.formGrid}>
-                <input className={styles.inputField} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Nova senha" type="password" />
-                <input className={styles.inputField} value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} placeholder="Confirme a nova senha" type="password" />
-                <input className={styles.inputField} value={passwordForPassword} onChange={(e) => setPasswordForPassword(e.target.value)} placeholder="Senha atual" type="password" />
+                <input
+                  className={styles.inputField}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Nova senha"
+                  type="password"
+                />
+                <input
+                  className={styles.inputField}
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  placeholder="Confirme a nova senha"
+                  type="password"
+                />
+                <input
+                  className={styles.inputField}
+                  value={passwordForPassword}
+                  onChange={(e) => setPasswordForPassword(e.target.value)}
+                  placeholder="Senha atual"
+                  type="password"
+                />
               </div>
-              <button className={styles.warningBtn} onClick={handleUpdatePassword} disabled={loadingPassword}>
+              <button
+                className={styles.warningBtn}
+                onClick={handleUpdatePassword}
+                disabled={loadingPassword}
+              >
                 {loadingPassword ? "Verificando..." : "Atualizar Senha"}
               </button>
             </div>
           )}
+        </div>
+
+        {/* --- CARD 3: LOGOUT --- */}
+        <div className={styles.card}>
+            <h3 className={styles.cardTitle} style={{color: 'var(--danger)'}}>Sair da Conta</h3>
+            <p className={styles.helperText}>Deseja encerrar sua sessão neste dispositivo?</p>
+            <button className={styles.logoutBtn} onClick={handleLogout}>
+                Sair / Logout
+            </button>
         </div>
 
       </div>
