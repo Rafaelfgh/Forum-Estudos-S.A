@@ -326,13 +326,139 @@ textarea.inputField {
   .profileImage {
     width: 150px;
     height: 150px;
-    
-   
   }
-  
+}
 
-  
-  
-  
+/* Container geral e Cards */
+.usuarioContainer {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
 
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.cardTitle {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* INPUTS: Visual Diferente (Leitura vs Edição) */
+.inputField {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.readOnly {
+  background-color: #f9f9f9; /* Cinza claro */
+  border: 1px solid transparent;
+  color: #555;
+  cursor: default;
+}
+
+.editable {
+  background-color: #fff;
+  border: 1px solid #007bff; /* Borda azul quando editando */
+  color: #000;
+}
+
+/* BOTÕES */
+.primaryBtn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: 500;
+}
+
+.warningBtn {
+  background-color: #e65100;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 5px;
+}
+
+.cancelBtn {
+  margin-top: 10px;
+  background: transparent;
+  border: none;
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* --- ESTILOS DO ACORDEÃO --- */
+
+.accordionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px 0; /* Aumenta a área de clique */
+}
+
+/* A setinha */
+.arrow {
+  font-size: 0.8rem;
+  color: #666;
+  transition: transform 0.3s ease; /* Animação suave */
+}
+
+/* Gira a seta quando aberto */
+.arrowUp {
+  transform: rotate(180deg);
+}
+
+.arrowDown {
+  transform: rotate(0deg);
+}
+
+/* Conteúdo interno */
+.accordionContent {
+  margin-top: 20px;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.subTitle {
+  font-size: 1rem;
+  color: #444;
+  margin-bottom: 10px;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 20px 0;
+}
+
+/* Layout dos inputs de segurança */
+.formGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }

@@ -843,3 +843,11 @@
   min-width: 110px;
   z-index: 9999;
 }
+
+.minhaImagem {
+  width: 00px;
+  height: auto;
+  mix-blend-mode: darken;
+  margin-left: 20px;
+  margin-top: 50px;
+}

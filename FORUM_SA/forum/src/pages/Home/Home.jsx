@@ -11,9 +11,9 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.siteTitle}>Estudos <span className={styles.highlight}>S.A</span></h1>
+        <img src="imagem1.png" alt="Logo" className={styles.minhaImagem}/>
         <p className={styles.subtitle}>
-          A comunidade definitiva para estudantes de concursos públicos. Compartilhe materiais, tire dúvidas, conecte-se com outros candidatos e conquiste sua aprovação!
+          A comunidade definitiva para estudantes de concursos públicos. <br/>Compartilhe materiais, tire dúvidas, conecte-se com outros candidatos e conquiste sua aprovação!
         </p>
         <div className={styles.buttonGroup}>
           <button className={styles.btnPrimary} onClick={() => navigate("/forum")}>

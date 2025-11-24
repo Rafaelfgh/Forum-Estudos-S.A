@@ -13,10 +13,10 @@
 }
 
 .siteTitle {
-   /* Use uma fonte moderna e mais arredondada */
-  font-family: 'Poppins', 'Nunito', sans-serif;
+  /* Use uma fonte moderna e mais arredondada */
+  font-family: "Poppins", "Nunito", sans-serif;
   font-size: 4.5rem; /* Um pouco maior para dar impacto */
-  color: #1E293B; /* Um cinza escuro em vez de preto puro fica mais suave */
+  color: #1e293b; /* Um cinza escuro em vez de preto puro fica mais suave */
   text-align: center;
   position: relative; /* Essencial para o posicionamento do highlight */
 }
@@ -28,13 +28,13 @@
 
 /* O "marca-texto" é criado com um pseudo-elemento ::after */
 .highlight::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 10px; /* Posição vertical do traço */
   left: -5px; /* Posição horizontal */
   height: 20px; /* Grossura do traço */
   width: calc(100% + 10px); /* Largura do traço */
-  background-color: #7AA6F5; /* Um azul mais claro que o principal */
+  background-color: #7aa6f5; /* Um azul mais claro que o principal */
   z-index: -1; /* Coloca o traço atrás do texto */
   transform: rotate(-1deg); /* Uma leve rotação para parecer mais natural */
   border-radius: 4px; /* Bordas levemente arredondadas */
@@ -53,7 +53,8 @@
   justify-content: center;
 }
 
-.btnPrimary, .btnSecondary {
+.btnPrimary,
+.btnSecondary {
   padding: 12px 32px;
   font-size: 1rem;
   border-radius: 8px;
@@ -65,14 +66,14 @@
 }
 
 .btnPrimary {
-  background: #2563EB;
+  background: #2563eb;
   color: #fff;
 }
 
 .btnSecondary {
   background: #fff;
   color: #000;
-  border: 2px solid #60A5FA;
+  border: 2px solid #60a5fa;
 }
 
 .btnPrimary:hover,
@@ -92,7 +93,7 @@
 .card {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   padding: 32px 24px;
   min-width: 220px;
   max-width: 260px;
@@ -111,4 +112,12 @@
   font-size: 1rem;
   color: #444;
   font-family: "Montserrat", sans-serif;
+}
+
+.minhaImagem {
+  width: 600px;
+  height: auto;
+  mix-blend-mode: darken;
+  margin-left: 20px;
+  margin-top: 50px;
 }
