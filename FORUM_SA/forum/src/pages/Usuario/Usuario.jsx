@@ -269,7 +269,7 @@ export default function Usuario() {
 
         {/* --- CARD 3: LOGOUT --- */}
         <div className={styles.card}>
-            <h3 className={styles.cardTitle} style={{color: 'var(--danger)'}}>Sair da Conta</h3>
+            <h3 className={styles.cardTitle} >Sair da Conta</h3>
             <p className={styles.helperText}>Deseja encerrar sua sessão neste dispositivo?</p>
             <button className={styles.logoutBtn} onClick={handleLogout}>
                 Sair
